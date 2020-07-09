@@ -1,0 +1,52 @@
+{
+	"extends": ["airbnb", "prettier"],
+	"plugins": ["prettier", "react", "import"],
+	"rules": {
+		"prettier/prettier": "error",
+		"strict": ["off", "global"],
+		"object-curly-spacing": ["error", "never"],
+		"no-dupe-keys": "error",
+		"semi": ["error", "always"],
+		"semi-spacing": "error",
+		"keyword-spacing": ["error", { "before": true, "after": true }],
+		"no-debugger": "off",
+		"no-alert": "off",
+		"no-await-in-loop": "off",
+		"no-return-assign": ["error", "except-parens"],
+		"no-restricted-syntax": ["error", "ForInStatement", "LabeledStatement", "WithStatement"],
+		"no-unused-vars": ["error", { "ignoreSiblings": true, "argsIgnorePattern": "res|next|^err" }],
+		"prefer-const": ["error", { "destructuring": "all" }],
+		"arrow-body-style": [2, "as-needed"],
+		"no-unused-expressions": ["error", { "allowTaggedTemplates": true }],
+		"no-param-reassign": ["error", { "props": false }],
+		"no-console": "off",
+		"import/prefer-default-export": "off",
+		"import": "off",
+		"func-names": "off",
+		"comma-dangle": "off",
+		"max-len": ["error", {
+			"code": 120,
+			"tabWidth": 2,
+			"ignoreStrings": true,
+			"ignoreComments": true,
+			"ignoreTrailingComments": true,
+			"ignoreUrls": true,
+			"ignoreTemplateLiterals": true,
+			"ignoreRegExpLiterals": true,
+			"ignorePattern": "^import\\s.*"
+		}],
+		"import/extensions": "off",
+		"no-underscore-dangle": "off",
+		"consistent-return": "off",
+		"radix": "off",
+		"no-shadow": [
+			2,
+			{
+				"hoist": "all",
+				"allow": ["resolve", "reject", "done", "next", "err", "error"]
+			}
+		],
+		"quotes": [2, "single", { "avoidEscape": true, "allowTemplateLiterals": true }],
+		"no-mixed-spaces-and-tabs": ["error", "smart-tabs"]
+	}
+}

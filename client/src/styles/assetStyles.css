@@ -1,0 +1,15 @@
+.iconHeight {
+	height: 30px;
+}
+
+.magGlass {
+	display: grid;
+	grid-template-columns: 1fr 6fr;
+	background-color: black;
+	width: 100%;
+	padding: 5px 25px;
+	border-radius: 500px;
+	color: white;
+	text-decoration: none;
+	font-size: 2em;
+}

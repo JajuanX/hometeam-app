@@ -1,11 +1,11 @@
 import React from 'react';
-import CreateBusiness from  './pages/createBusiness/CreateBusiness'
-import Home from  './pages/home/Home'
-import Posts from  './pages/Posts'
-import Login from  './pages/Login'
+import CreateBusiness from  '../pages/createBusiness/CreateBusiness'
+import Home from  '../pages/Home'
+import Posts from  '../pages/Posts'
+import Login from  '../pages/Login'
 import './App.css';
 import { BrowserRouter, Switch, Route } from 'react-router-dom'
-import TopBar from './components/navigation/topNavigation/topBar'
+import TopBar from '../components/navigation/topNavigation/topBar'
 
 function App() {
   return (

@@ -1,0 +1,12 @@
+.pill {
+	display: grid;
+	place-items: center;
+	height: 35px;
+	width: max-content;
+	background-color: black;
+	border-radius: 500px;
+	padding: 0px 25px;
+	color: white;
+	margin-left: 10px;
+	cursor: pointer;
+}

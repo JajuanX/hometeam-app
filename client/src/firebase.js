@@ -1,24 +1,33 @@
 import firebase from 'firebase/app';
 import 'firebase/firestore';
 import 'firebase/auth';
+import 'firebase/storage';
+import { GeoFirestore } from 'geofirestore';
 
 const config = {
-    apiKey: "AIzaSyBOP9I40hk4CZ-oT_JFpbzJR9FK52_4mz0",
-    authDomain: "hometeam-891a3.firebaseapp.com",
-    databaseURL: "https://hometeam-891a3.firebaseio.com",
-    projectId: "hometeam-891a3",
-    storageBucket: "hometeam-891a3.appspot.com",
-    messagingSenderId: "26724473528",
-    appId: "1:26724473528:web:391eaee922b0e53811324d"
+    apiKey: process.env.REACT_APP_APIKEY,
+    authDomain: process.env.REACT_APP_AUTHDOMAIN,
+    databaseURL: process.env.REACT_APP_DATABASEURL,
+    projectId: process.env.REACT_APP_PROJECTID,
+    storageBucket: process.env.REACT_APP_STORAGEBUCKET,
+    messagingSenderId: process.env.REACT_APP_MESSAGINGSENDERID,
+    appId: process.env.REACT_APP_APPID,
   };
+  
   // Initialize Firebase
 firebase.initializeApp(config);
 
+ 
+
 export const firestore = firebase.firestore();
 export const auth = firebase.auth();
+export const storage = firebase.storage();
 
 export const provider = new firebase.auth.GoogleAuthProvider();
 export const signInWithGoogle = () => auth.signInWithPopup(provider);
 export const signOut = () => auth.signOut();
+
+// Create a GeoCollection reference
+export const geofirestore = new GeoFirestore(firestore);
 
 export default firebase;
