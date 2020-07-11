@@ -20,3 +20,9 @@
 
 * `npm start` from project root or top level folder
 * `npm start` inside of `/client`
+
+## To contribute to this project 
+
+* You must create a pull request.
+* Once you create a pull request a seperate app will be spun up live to review. 
+* Pull request is approved then merged with master
