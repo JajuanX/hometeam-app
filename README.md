@@ -4,6 +4,7 @@
 #### Download these so you are on the same page with me in developing
 
 * [Source Tree](https://www.sourcetreeapp.com/)
+##### Once you install sourcetree download the extension gitflow
 * [VS CODE](https://code.visualstudio.com/download)
 
 
