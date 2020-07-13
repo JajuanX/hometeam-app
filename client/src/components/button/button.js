@@ -5,7 +5,7 @@ import './button.css'
 //and the name you want to appear on the pill itself. 
 
 const Button = (props) => (
-	<div className="pill" onClick={() => props.clickEvent()}>{props.text}</div>
+	<div className="pills" onClick={() => props.clickEvent()}>{props.text}</div>
 )
 
 export default Button
