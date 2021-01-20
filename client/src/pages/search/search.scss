@@ -1,0 +1,64 @@
+
+#search-page {
+	margin: 100px 0;
+
+	h1 {
+		font-weight: bolder;
+		font-size: 20px;
+		padding-left: 15px;
+	}
+
+	.category-container {
+		display: flex;
+		flex-direction: row;
+		overflow-y: scroll;
+		width: 100vw;
+		padding-left: 15px;
+
+		.category {
+			display: grid;
+			place-items: center;
+			height: 100px;
+			background-color: black;
+			color: white;
+			border-radius: 10px;
+			width: 180px;
+			margin-top: 10px;
+		}
+	}
+
+	.hide-results {
+		display: none;
+	}
+
+	.biz-container {
+		display: grid;
+		place-items: center;
+		width: 100%;
+		background-color: white;
+		margin-top: 20px;
+	}
+
+	.user-guide {
+		font-size: 16px;
+		text-align: center;
+		width: 100%;
+		margin-top: 100px;
+	}
+
+	.my-masonry-grid {
+		display: -webkit-box; /* Not needed if autoprefixing */
+		display: -ms-flexbox; /* Not needed if autoprefixing */
+		display: flex;
+		margin-left: 0; /* gutter size offset */
+		justify-content: center;
+		padding-bottom: 25px;
+	  }
+	  
+	.my-masonry-grid_column {
+		// padding-left: 0px; /* gutter size */
+		background-clip: padding-box;
+		padding: 15px;
+		margin: auto;
+	}
+}

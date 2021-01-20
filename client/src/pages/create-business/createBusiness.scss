@@ -1,0 +1,91 @@
+#createBusiness {
+	margin-top: 80px;
+
+	h1 {
+		font-size: 30px;
+		text-align: center;
+	}
+
+	.photoUpload {
+		display: grid;
+		grid-template-rows:  10fr 2fr 1fr;
+		text-align: center;
+
+		.upload-container {
+
+			label {
+				background-image: url('../../styles/assets/upload.png');
+				background-size: 80px 80px;
+				background-repeat: no-repeat;
+				background-position: center;
+				height: 80px;
+				width: 80px;
+
+				input {
+					display: none;
+				}
+			}
+
+			.hideUploadImage {
+				display: none;
+			}
+
+		}
+
+		h6 {
+			font-size: 12px;
+		}
+	}
+
+	.photoUploadButton {
+		background-color: black;
+		color: white;
+		border-radius: 500px;
+		display: grid;
+		place-items: center;
+	}
+
+	.button {
+		background-color: black;
+		color: white;
+	}
+
+	form {
+		text-align: center;
+		
+		.business-input {
+			border: none;
+			border-bottom: 2px solid black;
+			width: 90%;
+			margin-top: 30px;
+			font-size: 20px;
+		}
+
+	}
+
+	.autocomplete-dropdown-container {
+		width: 90%;
+		text-align: center;
+		margin:  -1px auto;
+		border-left: 1px solid black;
+		border-right: 1px solid black;
+		border-bottom: 1px solid black;
+	}
+
+	.name-photo-section {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-around;
+		width: 95%;
+		margin: auto;
+
+		input {
+			width: 100%;
+		}
+
+		select {
+			width: 100%;
+		}
+	}
+
+}

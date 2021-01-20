@@ -1,0 +1,31 @@
+.mediaPill {
+	display: grid;
+	place-items: center;
+	height: 35px;
+	background-color: black;
+	border-radius: 500px;
+	padding: 0px 25px;
+	color: white;
+	margin-left: 10px;
+	cursor: pointer;
+	width: 100%;
+
+}
+
+.socialButton {
+	display: block;
+	width: max-content;
+}
+
+.instagram {
+	background-color: #F8504F;
+}
+
+.facebook {
+	background-color: #22589A;
+}
+
+.twitter {
+	background-color: #29ACED;
+}
+

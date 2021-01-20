@@ -1,0 +1,23 @@
+#navBarContainer {
+	position: fixed;
+	top: 0px;
+	width: 100%;
+	padding: 10px;
+	background-color: white;
+	z-index: 1;
+
+	#NavBar {
+		display: grid;
+		grid-template-columns: 2fr 1fr;
+		width: 100%;
+		margin: auto 0;
+		height: max-content;
+		place-items: center;
+	}
+
+	img {
+		height: 40px;
+		border-radius: 100%;
+	}
+
+}

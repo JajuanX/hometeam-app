@@ -1,9 +1,0 @@
-.businessCard {
-	display: grid;
-	grid-template-rows: 3fr 1fr;
-	height: 300px;
-	width: 300px;
-}
-img {
-	height: 100%;
-}
