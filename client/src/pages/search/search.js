@@ -25,6 +25,7 @@ class Search extends React.Component {
 	unsubscribeFromBusinesses = null;
 	pageSize = 8;
 	field = 'businessName'
+	filteredBusinesses = []
 
 	componentDidMount = async () => { 
 		this.unsubscribeFromAuth = auth.onAuthStateChanged( async userAuth => {
@@ -47,6 +48,15 @@ class Search extends React.Component {
 		this.setState({[event.target.name]: event.target.value}, () => this.searchByTyping());
 	}
 
+	searchByTyping = () => {
+		this.filteredBusinesses = this.filteredBusinesses.filter( business => {
+			if (business.businessName.includes(this.state.searchString)){
+				return business;
+			} 
+			return this.filteredBusinesses;
+		})
+	}
+
 	searchForCategory = async (category) =>  {
 		this.setState({ isLoading: true})
 
@@ -54,7 +64,8 @@ class Search extends React.Component {
 			.where('businessCategory', '==', `${category}`)
 			.get();
 		let results = this.unsubscribeFromBusinesses.docs.map(collectIdsandDocs);
-		this.setState({businesses: results, isLoading: false, userSelectedCategory: true, category}, () => this.handle_user_favorites)
+		if(results) this.filteredBusinesses = results;
+		this.setState({businesses: results, isLoading: false, userSelectedCategory: true, category})
 	}
 
 	get uid() {
@@ -70,8 +81,12 @@ class Search extends React.Component {
 	}
 
 	render(){
+		let filteredBusinesses = this.state.businesses.filter( business => {
+			if (business.businessName.toLowerCase().includes(this.state.searchString.toLowerCase())){
+				return business;
+			} 
+		})
 
-		console.log(this.state.businesses);
 		return (
 			<div id="search-page">
 				<div id="top-of-page">
@@ -100,9 +115,18 @@ class Search extends React.Component {
 						})
 					}
 				</div>
+
+				<input
+					name="searchString"
+					type="text"
+					value={this.state.searchString}
+					onChange={this.handleChange}
+					autoComplete="off"
+					disabled={this.state.businesses.length === 0}
+					/>
 				{ this.state.userSelectedCategory ? <div className="biz-container">
 						{
-							this.state.businesses.map((business) => {
+							filteredBusinesses.map((business) => {
 								return (
 										<BusinessDisplay
 											key={business.id}

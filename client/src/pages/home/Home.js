@@ -1,6 +1,8 @@
 import React from 'react'
 import './home.scss'
+import { Link } from 'react-router-dom'
 import TopBar from '../../components/navigation/topNavigation/topBar'
+import BottomBar from '../../components/navigation/bottomNavigation/bottomBar'
 import { firestore, auth, createUserProfileDocument } from '../../firebase'
 import { collectIdsandDocs } from '../../utils/utilities'
 import TileDisplay from '../../components/businessTile/TileDisplay'
@@ -10,7 +12,10 @@ import Button from '../../components/button/button';
 import Masonry from 'react-masonry-css';
 import { Waypoint } from 'react-waypoint';
 import HomeTeamLogo from '../../styles/assets/HomeTeamWording.png';
+import HomeTeamLogoNoWords from '../../styles/assets/HomeTeamNoWords.png';
 import SplashPage from '../../components/splash-page/splash-page';
+import Nearby from '../../styles/assets/nearby.png';
+
 
 class Home extends React.Component {
 	state = { 
@@ -40,7 +45,7 @@ class Home extends React.Component {
 			if (userAuth) {
 				const userRef = await createUserProfileDocument(userAuth)
 				userRef.onSnapshot(snapshot => {
-					this.setState({ user: {uid: snapshot.id, ...snapshot.data()} })
+					this.setState({ user: {uid: snapshot.id, ...snapshot.data()} }, () => this.handle_user_favorites())
 				})
 				
 			} else {
@@ -60,11 +65,29 @@ class Home extends React.Component {
 		
 	}
 
-	nextPage = () => {
+	handle_user_favorites = () => {
+		const userFavorites = this.state.user.favorites.map( favorite => {
+			return firestore.doc(`businesses/${favorite}`).get();
+		})
+
+		Promise.all(userFavorites)
+			.then(docs => {
+				const businesses = docs.map(doc =>{
+					return {
+						id: doc.id,
+						...doc.data()
+						}
+				});
+				this.setState({userFavoriteBusinesses: businesses})
+				
+			})//todo: catch error here 
+		
+	}
+
+	nextPage = () => {		
 		let businesses = this.state.businesses;
 		if(businesses.length === 0) return;
-
-		this.setState({isLoading: true});
+		console.log('loading');
 		const last = this.state.businesses[this.state.businesses.length - 1];
 		this.unsubscribeFromBusinesses = firestore.collection('businesses')
 			.orderBy(this.field)
@@ -82,8 +105,7 @@ class Home extends React.Component {
 				if(businesses.length === 0) return;
 				this.setState({ 
 					businesses, 
-					currentPage: pageNumber, 
-					isLoading: false });
+					currentPage: pageNumber});
 				}, (error) => {
 					error.log(error);
 				})
@@ -118,7 +140,6 @@ class Home extends React.Component {
 			const nearestBusinesses = snapshot.docs.map(collectIdsandDocs)
 			this.setState({ nearestBusinesses })
 		})
-		this.setState({ nearYou: true })
 	}
 
 	goToMap = () => {
@@ -133,9 +154,24 @@ class Home extends React.Component {
 		return firestore.doc(`users/${this.uid}`);
 	}
 
+	get businessRef() {
+		return firestore.doc(`businesses/${this.businessID}`);
+	}
+
 	handleLike = event => {
 		event.preventDefault()
 		this.userRef.arrayUnion(`${this.uid}`);
+	}
+
+	toggleNearby = () => {	
+		this.setState(prevState => ({
+			nearYou: !prevState.nearYou
+		  }), () => this.nearby());
+	}
+
+	nearby = () => {
+		if (!this.state.nearYou) return
+		this.getLocation();
 	}
 
 	componentWillUnmount = () => {
@@ -150,21 +186,47 @@ class Home extends React.Component {
 			700: 2,
 			500: 2
 		  };
+		  
 
 		return (
 			<div id="home-page">
 				<div id="top-of-page">
-					<TopBar
+					<TopBar 
 						user={this.state.user}
-						searching={this.searching}
 					/>
 				</div>
-				<div className="top-buttons">
+
+				<div className="user-favorites">
+					<div className="hometeam-favorite">
+						<img src={HomeTeamLogoNoWords} alt="Hometeam"></img>
+						<h2>Favorites</h2>
+					</div>
 					{
-						this.state.nearYou ? <div><Button text="All Businesses" clickEvent={this.showAllBusiness}/></div> :
-						<div><Button text="Near You" clickEvent={this.getLocation}/></div>
+						this.state.userFavoriteBusinesses && this.state.userFavoriteBusinesses ? this.state.userFavoriteBusinesses.map((favoriteBusiness, index) => {
+							return (
+								<Link to={`/business/${favoriteBusiness.id}`} className="favorite-business" id={index}>
+									<img src={favoriteBusiness.coverPhoto} alt={favoriteBusiness.businessName}></img>
+									<h2>{favoriteBusiness.businessName}</h2>	
+								</Link>
+							)
+						}): null
 					}
-					<div><Button text="Business Map" clickEvent={this.goToMap}/></div>
+				</div>
+				<div className="top-buttons">
+					<div className="custom-checkbox">
+						<input id="status" 
+								type="checkbox" 
+								name="status"
+								value={this.state.nearYou}
+								onChange={() => this.toggleNearby()}
+								></input>
+						<label htmlFor="status">
+							<div className="status-switch"
+								data-unchecked={this.state.nearYou ? 'Show All' : 'Nearby'}
+								data-checked="">
+							</div>
+						</label>
+					</div>	
 				</div>
 
 				<div className="biz-container">
@@ -195,27 +257,8 @@ class Home extends React.Component {
 						}
 					</Masonry>
 				</div>
+
 				<div className="waypoint">
-					{	this.state.isLoading ?	
-						<img className="loading-logo" src={HomeTeamLogo} alt="Home Team Logo"></img>
-						: null
-					}
-					{	this.state.noBusinesses ? 
-						<>
-						<a href="#home-page">
-							<div>
-								<div>All Businesses Loaded</div>
-								<div className="up-chevrons">
-									<div className="chevron-arrow-right"></div>
-									<div className="chevron-arrow-right"></div>
-									<div className="chevron-arrow-right"></div>
-								</div>
-								<div className="back-to-top">Back to Top</div>
-							</div>
-						</a>
-						</>
-						: null
-					}
 					<Waypoint
 						onEnter={this.nextPage}
 					/>

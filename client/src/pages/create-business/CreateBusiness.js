@@ -2,7 +2,6 @@ import React from 'react';
 import { firestore, auth, createUserProfileDocument } from '../../firebase';
 import firebase from 'firebase/app';
 import '../../App.scss';
-import TopBar from '../../components/navigation/topNavigation/topBar';
 import { storage } from '../../firebase';
 import './createBusiness.scss';
 import SimpleReactValidator from 'simple-react-validator';
@@ -28,11 +27,16 @@ class CreateBusiness extends React.Component {
 		businessHours: '',
 		businessEmail:'',
 		businessWebsite: '',
+		businessLocation: {},
+		businessNumber: '',
+		coverPhoto: null,
+		featurePhoto1: null,
+		featurePhoto2: null,
+		featurePhoto3: null,
 		user: [],
 		progress: 0,
-		photoReady: false,
 	}
-	validator = new SimpleReactValidator();
+	validator = new SimpleReactValidator({autoForceUpdate: this});
 
 	southWest = new window.google.maps.LatLng( 25.484490, -80.468150 );
 	northEast = new window.google.maps.LatLng( 26.679440, -80.036710 );
@@ -43,6 +47,27 @@ class CreateBusiness extends React.Component {
 		phone: /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/,
 		isURL: /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/g,
 	}
+
+	normalizeInput = (value, previousValue) => {
+		// return nothing if no value
+		if (!value) return value; 
+	  
+		// only allows 0-9 inputs
+		const currentValue = value.replace(/[^\d]/g, '');
+		const cvLength = currentValue.length; 
+	  
+		if (!previousValue || value.length > previousValue.length) {
+	  
+		  // returns: "x", "xx", "xxx"
+		  if (cvLength < 4) return currentValue; 
+	  
+		  // returns: "(xxx)", "(xxx) x", "(xxx) xx", "(xxx) xxx",
+		  if (cvLength < 7) return `(${currentValue.slice(0, 3)}) ${currentValue.slice(3)}`; 
+	  
+		  // returns: "(xxx) xxx-", (xxx) xxx-x", "(xxx) xxx-xx", "(xxx) xxx-xxx", "(xxx) xxx-xxxx"
+		  return `(${currentValue.slice(0, 3)}) ${currentValue.slice(3, 6)}-${currentValue.slice(6, 10)}`; 
+		}
+	  };
 
 	searchOptions = {
 		bounds: this.hyderabadBounds,
@@ -74,8 +99,9 @@ class CreateBusiness extends React.Component {
 
 	}
 	handleUploadChange = async (event) => {
-		this.setState({ photo: event.target.files[0] })
 		event.preventDefault()
+		let fileName = event.target.files[0].name;
+		let targetName = event.target.name;		
 		if (event.target.files[0]) {
 			try {
                 Resizer.imageFileResizer(
@@ -87,7 +113,7 @@ class CreateBusiness extends React.Component {
                 0,
                 async (uri) => {
                     console.log(uri)
-					await this.setState({ resizedPhoto: uri }, () => this.handleUpload())
+					await this.setState({ resizedPhoto: uri }, () => this.handleUpload(fileName, targetName))
 
                 },
                 'blob',
@@ -96,30 +122,47 @@ class CreateBusiness extends React.Component {
                 );
             }   catch(err) {
                     console.log(err)
-            }
-			
+			}
 		}
 	}
 
 	handleChange = (event) => {
+		let phoneNumber = event.target.value;
 		event.preventDefault();
-		this.setState({[event.target.name]: event.target.value})  
+		if (event.target.name === 'businessNumber') {
+			console.log('run');
+			
+			this.setState(prevState => ({ businessNumber: this.normalizeInput(phoneNumber, prevState.businessPhone) }));
+		} else {
+			this.setState({[event.target.name]: event.target.value})
+		}
 	}
+
 	handleAddressChange = (businessAddress) => {
+		console.log(businessAddress);
+		
 		this.setState({ businessAddress });
 
 	}
 
 	handleSelect = businessAddress => {
-		this.setState({ businessAddress });
+		const splitAddress = businessAddress.split(', ');
+		const [ address, city, state, country ] = splitAddress;
+		const businessLocation = {
+			address,
+			city,
+			state,
+			country
+		}
+		console.log(address, city, state, country);
 		geocodeByAddress(businessAddress)
 		.then(results => getLatLng(results[0]))
-		.then(latLng => this.setState({ businessCoordinates: latLng }))
+		.then(latLng => this.setState({ businessAddress, businessCoordinates: latLng, businessLocation }))
 		.catch(error => console.error('Error', error));		
 	};
 
-	handleUpload = () => {
-		const uploadTask = storage.ref(`images/${this.state.photo.name}`).put(this.state.resizedPhoto);
+	handleUpload = (fileName, targetName) => {
+		const uploadTask = storage.ref(`images/${fileName}`).put(this.state.resizedPhoto);
 		uploadTask.on(
 			"state_changed",
 			snapshot => {
@@ -135,11 +178,11 @@ class CreateBusiness extends React.Component {
 			() => {
 				storage
 					.ref("images")
-					.child(this.state.photo.name)
+					.child(fileName)
 					.getDownloadURL()
 					.then(url => {
 						console.log(url);
-						this.setState({ businessPhoto: url, photoReady: true })
+						this.setState({ [targetName]: url })
 					})
 			}
 		)
@@ -152,19 +195,28 @@ class CreateBusiness extends React.Component {
 
 	addBusiness = async event => {
 		event.preventDefault();
+		if(!this.validator.allValid()){
+			this.validator.showMessages()
+			return;
+		}
 		const geofirestore = new GeoFirestore(firestore);
 		const geocollection = geofirestore.collection('businesses');
 		const { businessName,
 			businessDescription,
 			businessAddress,
-			businessPhoto,
 			businessCoordinates,
 			businessCategory,
 			businessTwitter,
 			businessFacebook,
 			businessInstagram,
+			businessNumber,
 			businessHours,
-			businessWebsite, } = this.state;
+			coverPhoto,
+			featurePhoto1,
+			featurePhoto2,
+			featurePhoto3,
+			businessWebsite,
+			businessLocation } = this.state;
 		
 		const { uid, displayName, email, photoURL } = auth.currentUser || {};
 
@@ -172,7 +224,15 @@ class CreateBusiness extends React.Component {
 			businessName,
 			businessDescription,
 			businessAddress,
-			businessPhoto,
+			businessNumber,
+			coverPhoto,
+			featurePhoto1,
+			featurePhoto2,
+			featurePhoto3,
+			businessLocation,
+			likes: [],
+			upvotes: [],
+			downvotes: [],
 			socialMedia: {
 				twitter: businessTwitter || null,
 				facebook: businessFacebook || null,
@@ -188,7 +248,6 @@ class CreateBusiness extends React.Component {
 				email,
 				photoURL,
 			},
-			likes: [],
 		}
 
 		geocollection.add(business)
@@ -209,21 +268,24 @@ class CreateBusiness extends React.Component {
 			businessAddress,
 			businessDescription,
 			businessCategory,
-			businessPhoto,
 			businessTwitter,
 			businessFacebook,
 			businessInstagram,
 			businessEmail,
 			businessWebsite,
+			businessNumber,
 		} = this.state;
 	return (
 		<div id="createBusiness">
 			<h1>Add Your Business</h1>
 			<div>
-				<form>
+				<form 
+					onSubmit={() => this.addBusiness()}
+				>
 				<div className="name-photo-section">
-					<div>
+					<div className="name-select-container">
 						<div>
+							<label className="business-label" htmlFor="businessName">Business Name</label>
 							<input
 								className="business-input"
 								placeholder="Name of your Business"
@@ -232,14 +294,14 @@ class CreateBusiness extends React.Component {
 								value={businessName}
 								onChange={this.handleChange}
 								autoComplete="off"
-								maxLength="60"
 								onBlur={() => this.validator.showMessageFor('businessName')}
-								required
 								/>
 							{
-								this.validator.message('businessName', this.state.businessName, 'required|max:3')
+								this.validator.message('businessName', this.state.businessName, 'required')
 							}
 						</div>
+
+						<label className="business-label" htmlFor="businessCategory">Select a Category</label>
 						<select
 							className="business-input"
 							placeholder="Category"
@@ -247,28 +309,31 @@ class CreateBusiness extends React.Component {
 							value={ businessCategory }
 							onChange={this.handleChange}
 							autoComplete="off"
-							required
+							onBlur={() => this.validator.showMessageFor('businessCategory')}
 							>
+							<option value="">Select a Category</option>
 							{
 								this.businessTypes.map((type, index) => {
 								return <option key={index} value={type}>{type}</option>
 								})
 							}
 						</select>
+						{
+							this.validator.message('businessCategory', this.state.businessCategory, 'required')
+						}
 					</div>
 					<div className="photoUpload">
 						<div className="upload-container">
-							<label className={`${this.state.photoReady ? 'hideUploadImage': ''}`}>
+							<label className={`${this.state.coverPhoto ? 'hideUploadImage': ''}`}>
 								<input
-									name="businessPhoto"
+									name="coverPhoto"
 									type="file"
 									onChange={this.handleUploadChange}
 									autoComplete="off"
-									required
-									/> rr
+									/>
 							</label>
-							<div className={`${this.state.photoReady ? '': 'hideUploadImage'}`}>
-								{ this.state.photoReady ? <img src={ businessPhoto } alt="#" style={{ height: '80px', width: '80px'}}></img> : null }
+							<div className={`${this.state.coverPhoto ? '': 'hideUploadImage'}`}>
+								{ this.state.coverPhoto ? <img src={ this.state.coverPhoto } alt="#" style={{ height: '80px', width: '80px'}}></img> : null }
 							</div>
 						</div>
 						<div>
@@ -277,6 +342,7 @@ class CreateBusiness extends React.Component {
 					</div>
 				</div>
 
+				<label className="business-label" htmlFor="businessAddress">Business Address</label>
 					<PlacesAutocomplete
 						searchOptions={this.searchOptions}
 						name="businessAddress"
@@ -287,7 +353,7 @@ class CreateBusiness extends React.Component {
 						highlightFirstSuggestion={true}
 						>
 						{({ getInputProps, suggestions, getSuggestionItemProps, loading }) => (
-							<div>
+							<div className="address-container">
 								<input className='business-input'
 									{...getInputProps({
 									placeholder: 'Business Address',
@@ -318,7 +384,26 @@ class CreateBusiness extends React.Component {
 							</div>
 						)}
 					</PlacesAutocomplete>
+					{
+						this.validator.message('businessAddress', this.state.businessAddress, 'required')
+					}
 
+					<label className="business-label" htmlFor="businessNumber">Phone Number</label>
+					<input
+						className="business-input"
+						placeholder="Phone Number"
+						type="tel"
+						pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
+						name="businessNumber"
+						value={ businessNumber }
+						onChange={this.handleChange}
+						autoComplete="off"
+					/>
+					{
+						this.validator.message('businessNumber', this.state.businessNumber, 'required')
+					}
+
+					<label className="business-label" htmlFor="businessDescription">Describe your Business</label>
 					<input
 						className="business-input"
 						placeholder="Description"
@@ -327,23 +412,76 @@ class CreateBusiness extends React.Component {
 						value={ businessDescription }
 						onChange={this.handleChange}
 						autoComplete="off"
-						required
-						/>
+					/>
+					{
+						this.validator.message('businessDescription', this.state.businessDescription, 'required')
+					}
+					
+					<h1>Feature Photos</h1>
 
+					<div className="feature-photos-container">
+						<div className="upload-container">
+							<label className={`${this.state.featurePhoto1 ? 'hideUploadImage': ''}`}>
+								<input
+									name="featurePhoto1"
+									type="file"
+									onChange={this.handleUploadChange}
+									autoComplete="off"
+									/>
+							</label>
+							<div className={`${this.state.featurePhoto1 ? '': 'hideUploadImage'}`}>
+								{ this.state.featurePhoto1 ? <img src={ this.state.featurePhoto1 } alt="#" style={{ height: '80px', width: '80px'}}></img> : null }
+							</div>
+							<div>Upload Photo</div>
+						</div>
+						<div className="upload-container">
+							<label className={`${this.state.featurePhoto2 ? 'hideUploadImage': ''}`}>
+								<input
+									name="featurePhoto2"
+									type="file"
+									onChange={this.handleUploadChange}
+									autoComplete="off"
+									/>
+							</label>
+							<div className={`${this.state.featurePhoto2 ? '': 'hideUploadImage'}`}>
+								{ this.state.featurePhoto2 ? <img src={ this.state.featurePhoto2 } alt="#" style={{ height: '80px', width: '80px'}}></img> : null }
+							</div>
+							<div>Upload Photo</div>
+						</div>
+						<div className="upload-container">
+							<label className={`${this.state.featurePhoto3 ? 'hideUploadImage': ''}`}>
+								<input
+									name="featurePhoto3"
+									type="file"
+									onChange={this.handleUploadChange}
+									autoComplete="off"
+									/>
+							</label>
+							<div className={`${this.state.featurePhoto3 ? '': 'hideUploadImage'}`}>
+								{ this.state.featurePhoto3 ? <img src={ this.state.featurePhoto3 } alt="#" style={{ height: '80px', width: '80px'}}></img> : null }
+							</div>
+							<div>Upload Photo</div>
+						</div>
+					</div>
+
+					<label className="business-label" htmlFor="businessEmail">Business Email</label>
 					<input
 						className="business-input"
-						placeholder="Your business email"
+						placeholder="IE: john.doe@gmail.com"
 						type="email"
 						name="businessEmail"
 						value={ businessEmail }
 						onChange={this.handleChange}
 						autoComplete="off"
-						required
 						/>
-					
+					{
+						this.validator.message('businessEmail', this.state.businessEmail, 'required')
+					}
+
+					<label className="business-label" htmlFor="businessWebsite">Business Website</label>
 					<input
 						className="business-input"
-						placeholder="Link to your business website"
+						placeholder="IE: www.yourwebsite.com"
 						type="url"
 						name="businessWebsite"
 						value={ businessWebsite }
@@ -351,9 +489,10 @@ class CreateBusiness extends React.Component {
 						autoComplete="off"
 						/>
 
+					<label className="business-label" htmlFor="businessTwitter">Business Twitter</label>
 					<input
 						className="business-input"
-						placeholder="Link to your Twitter page"
+						placeholder="IE: www.twitter.com/your_username"
 						type="url"
 						name="businessTwitter"
 						value={ businessTwitter }
@@ -361,9 +500,10 @@ class CreateBusiness extends React.Component {
 						autoComplete="off"
 						/>
 
+					<label className="business-label" htmlFor="businessFacebook">Business Facebook</label>
 					<input
 						className="business-input"
-						placeholder="Link to your Facebook page."
+						placeholder="IE: www.facebook.com/your_businesspage"
 						type="url"
 						name="businessFacebook"
 						value={ businessFacebook }
@@ -371,20 +511,20 @@ class CreateBusiness extends React.Component {
 						autoComplete="off"
 						/>
 
+					<label className="business-label" htmlFor="businessInstagram">Business Instagram</label>
 					<input
 						className="business-input"
-						placeholder="Link to your Instagram page."
+						placeholder="IE: www.instagram.com/your_username"
 						type="url"
 						name="businessInstagram"
 						value={ businessInstagram }
 						onChange={this.handleChange}
 						autoComplete="off"
 						/>
-					<div onClick={(event) => this.addBusiness(event)} className="button">Add post</div>
+
+					<button type="submit" onClick={(event) => this.addBusiness(event)} className="button">Add Business</button>
 				</form>
 			</div>
-
-			<TopBar />
 		</div>
 	)
   }

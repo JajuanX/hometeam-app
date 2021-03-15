@@ -5,6 +5,7 @@ import Login from  './pages/login/Login'
 import Search from  './pages/search/search'
 import Business from './pages/business/Business'
 import UserProfile from './pages/user-profile/UserProfile'
+import BottomBar from './components/navigation/bottomNavigation/bottomBar'
 import './App.scss';
 import { BrowserRouter, Switch, Route } from 'react-router-dom'
 import BusinessMap from './pages/business-map/BusinessMap';
@@ -21,6 +22,7 @@ function App() {
 			<Route path='/search' component={Search}/>
 			<Route path='/' component={Login}/>
 		</Switch>
+		<BottomBar />
 	</BrowserRouter>
   );
 }

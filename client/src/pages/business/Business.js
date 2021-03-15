@@ -14,6 +14,10 @@ import Web from '../../styles/assets/social-media/website.png';
 import Twitter from '../../styles/assets/social-media/twitter.png';
 import YouTube from '../../styles/assets/social-media/youtube.png';
 import Email from '../../styles/assets/social-media/email.png';
+import ModalImage from "react-modal-image";
+import { formatPhoneNumber } from 'react-phone-number-input'
+// formatPhoneNumber('+12133734253') === '(213) 373-4253'
+
 
 class Business extends React.Component {
 	state = { 
@@ -83,6 +87,8 @@ class Business extends React.Component {
 	}
 
 	handle_selected_business = (selectedBusiness) => {
+		console.log(selectedBusiness);
+		
 		selectedBusiness.upVoteCount = selectedBusiness.upvotes.length || 0;
 		selectedBusiness.downVoteCount = selectedBusiness.downvotes.length || 0;
 		selectedBusiness.userDownVoted = selectedBusiness.downvotes.includes(this.uid);
@@ -191,10 +197,15 @@ class Business extends React.Component {
   render(){
 		const { 	
 			businessCategory,
+			businessAddress,
+			businessNumber,
 			businessDescription,
 			socialMedia,
 			businessName,
-			businessPhoto,
+			coverPhoto,
+			featurePhoto1,
+			featurePhoto2,
+			featurePhoto3,
 			coordinates,
 		} = this.state.selectedBusiness;
 		
@@ -208,9 +219,13 @@ class Business extends React.Component {
 	return (
 		<div id="business">
 			<div className="info-card">
-				<img className='business-photo' src={businessPhoto} alt={businessName}></img>
+				<img className='business-photo' src={coverPhoto} alt={businessName}></img>
 				<div className="main-info">
 					<h1>{businessName}</h1>
+					<a target="_blank" 
+						rel="noopener noreferrer"
+						href={`https://www.google.com/maps/search/?api=1&query=${coordinates && coordinates.oa},${coordinates && coordinates.ha}`}><p>{businessAddress}</p></a>
+					<a href={`tel:${businessNumber}`}><p>{businessNumber}</p></a>
 				</div>
 			</div>
 			<hr></hr>
@@ -250,37 +265,53 @@ class Business extends React.Component {
 				<h1>About this Business</h1>
 				<p>{businessDescription}</p>
 			</div>
+
+			<h1>Featured Photos</h1>
+			<div className="feature-photo-container">
+				{featurePhoto1 && 
+				<ModalImage
+				className="feature-photo"
+				small={featurePhoto1}
+				large={featurePhoto1}
+				alt="Hello World!"
+			  />
+				}
+				{featurePhoto2 && <img className="feature-photo" alt="Feature 2" src={featurePhoto2}></img>}
+				{featurePhoto3 && <img className="feature-photo" alt="Feature 3" src={featurePhoto3}></img>}
+
+			</div>
+
 			<div className="social-media">
 				<h1> Follow Us On </h1>
 				<div className="social-container">
 					{ 
 					socialMedia && socialMedia.instagram ? 
-						<a href={socialMedia.instagram}><img className="social-media-icons" alt="instagram" src={Instagram}></img></a> : null
+						<a target="_blank" rel="noopener noreferrer" href={socialMedia.instagram}><img className="social-media-icons" alt="instagram" src={Instagram}></img></a> : null
 				}
 					{ 
 					socialMedia && socialMedia.twitter ? 
-						<a href={socialMedia.twitter}><img className="social-media-icons" alt="twitter" src={Twitter}></img></a> : null
+						<a target="_blank" rel="noopener noreferrer" href={socialMedia.twitter}><img className="social-media-icons" alt="twitter" src={Twitter}></img></a> : null
 				}
 					{ 
 					socialMedia && socialMedia.facebook ? 
-						<a href={socialMedia.facebook}><img className="social-media-icons" alt="facebook" src={FaceBook}></img></a> : null
+						<a target="_blank" rel="noopener noreferrer" href={socialMedia.facebook}><img className="social-media-icons" alt="facebook" src={FaceBook}></img></a> : null
 				}
 					{ 
 					socialMedia && socialMedia.website ? 
-						<a href={socialMedia.website}><img className="social-media-icons" alt="web" src={Web}></img></a> : null
+						<a target="_blank" rel="noopener noreferrer" href={socialMedia.website}><img className="social-media-icons" alt="web" src={Web}></img></a> : null
 				}
 					{ 
 					socialMedia && socialMedia.email ? 
-						<a href={socialMedia.email}><img className="social-media-icons" alt="email" src={Email}></img></a> : null
+						<a target="_blank" rel="noopener noreferrer" href={socialMedia.email}><img className="social-media-icons" alt="email" src={Email}></img></a> : null
 				}
 				{ 
 					socialMedia && socialMedia.youtube ? 
-						<a href={socialMedia.youtube}><img className="social-media-icons" alt="youtube" src={YouTube}></img></a> : null
+						<a target="_blank" rel="noopener noreferrer" href={socialMedia.youtube}><img className="social-media-icons" alt="youtube" src={YouTube}></img></a> : null
 				}
 				</div>
 			</div>
 			{ 
-				coordinates && <div style={{ height: '400px', width: '100%', borderRadius: '50px', overflow: 'hidden' }}>
+				coordinates && <div style={{ height: '400px', width: 'auto', borderRadius: '50px', overflow: 'hidden' }}>
 					<GoogleMapReact
 						bootstrapURLKeys={{ key: process.env.REACT_APP_APIKEY }}
 						defaultCenter={location}
@@ -331,12 +362,15 @@ class Business extends React.Component {
 export default Business
 
 
-const LocationPin = ({ icon }) => (
+const LocationPin = ({ icon, lat, lng }) => (
 	<div className="pin">
+		<a target="_blank" 
+					rel="noopener noreferrer"
+					href={`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`}>
 	  {<BusinessIcon 
 		  icon={icon}
-		  size="20px"
-	  />}
+		  size="40px"
+	  />}</a>
 	</div>
   )
 

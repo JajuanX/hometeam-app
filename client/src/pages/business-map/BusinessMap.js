@@ -4,11 +4,12 @@ import { collectIdsandDocs } from '../../utils/utilities'
 import BusinessIcon from '../../components/business-icons/BusinessIcon'
 import '../../App.scss'
 import GoogleMapReact from 'google-map-react';
+import BusinessDisplay from '../../components/business-display/BusinessDisplay'
 
-const LocationPin = ({ text, businessName, icon }) => {
-	console.log(businessName);
+const LocationPin = ({ business, icon, showBusiness}) => {
+	let pinnedBusiness = business;
 	return (
-	<div className="pin">
+	<div className="pin" onClick={() => showBusiness(pinnedBusiness)}>
 	  <BusinessIcon 
 		  icon={icon}
 		  size="40px"
@@ -26,6 +27,8 @@ class BusinessMap extends React.Component {
 	state = { 
 		businessMap:[],
 		user: [],
+		business: {},
+		showBusiness: false,
 	}
 
 	unsubscribeFromAuth = null; 
@@ -50,6 +53,11 @@ class BusinessMap extends React.Component {
 		
 	}
 
+	showBusiness = (business) => {
+		console.log("clicked", business);
+		this.setState({business, showBusiness: true,})
+	}
+
 	componentWillUnmount = () => {
 		this.unsubscribeFromAuth();
 		this.unsubscribeFromBusinesses();
@@ -61,9 +69,7 @@ class BusinessMap extends React.Component {
 	}
 
   render(){
-		const {businesses, user} = this.state
- 		console.log(businesses, user);
- 
+		const {businesses, user} = this.state 
 		const location = {
 			address: '4821 sw 23rd st West Park, FL 33023',
 			lat: 25.990009,
@@ -82,10 +88,10 @@ class BusinessMap extends React.Component {
 					>
 					{
 						businesses && businesses.map( business => {
-							console.log(business);
-							
 							return (
 								<LocationPin
+									showBusiness={this.showBusiness}
+									business={business}
 									lat={business.coordinates.oa}
 									lng={business.coordinates.ha}
 									icon={business.businessCategory}
@@ -97,6 +103,17 @@ class BusinessMap extends React.Component {
 					}
 				</GoogleMapReact>
 			</div> 
+			{	this.state.showBusiness ?
+					<BusinessDisplay
+						key={this.state.business.id}
+						business={this.state.business}
+						id={this.state.business.id}
+						user={this.state.user}
+						handle_add_to_favorites={this.handle_add_to_favorites}
+					/>
+					:
+					null
+			}
 		</div>
 	)
   }

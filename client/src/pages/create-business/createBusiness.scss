@@ -1,17 +1,26 @@
+@import '../../styles/_variables.scss';
+
 #createBusiness {
-	margin-top: 80px;
+	margin-top: 20px;
 
 	h1 {
 		font-size: 30px;
 		text-align: center;
 	}
 
+	.srv-validation-message {
+		color: red;
+	}
+
 	.photoUpload {
-		display: grid;
-		grid-template-rows:  10fr 2fr 1fr;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-around;
 		text-align: center;
 
 		.upload-container {
+			display: flex;
+			flex-direction: column;
 
 			label {
 				background-image: url('../../styles/assets/upload.png');
@@ -20,6 +29,7 @@
 				background-position: center;
 				height: 80px;
 				width: 80px;
+				margin: auto;
 
 				input {
 					display: none;
@@ -51,40 +61,101 @@
 	}
 
 	form {
-		text-align: center;
+		text-align: left;
+		padding: 0px 20px;
 		
-		.business-input {
-			border: none;
-			border-bottom: 2px solid black;
-			width: 90%;
-			margin-top: 30px;
+		h1{
+			margin: 20px;
+		}
+
+		.business-label {
+			display: block;
+			margin-top: 20px;
+			margin-bottom: 3px;
 			font-size: 20px;
 		}
 
+		.business-input {
+			border: none;
+			border-bottom: 2px solid black;
+			width: 100%;
+			font-size: 16px;
+		}
+
+		button {
+			width: 60%;
+			background-color: $brand-primary;
+			border: none;
+			margin: 20px 0px;
+			padding: 10px;
+		}
+
+	}
+	.address-container {
+		position: relative;
+
+		.autocomplete-dropdown-container {
+			width: 90%;
+			text-align: center;
+			margin:  -1px auto;
+			border-left: 1px solid black;
+			border-right: 1px solid black;
+			border-bottom: 1px solid black;
+			position: relative;
+			z-index: 120;
+		}
 	}
 
-	.autocomplete-dropdown-container {
-		width: 90%;
-		text-align: center;
-		margin:  -1px auto;
-		border-left: 1px solid black;
-		border-right: 1px solid black;
-		border-bottom: 1px solid black;
-	}
 
 	.name-photo-section {
 		display: flex;
 		flex-direction: row;
-		justify-content: space-around;
-		width: 95%;
+		justify-content: space-between;
+		width: 100%;
 		margin: auto;
-
-		input {
+		
+		.name-select-container {
 			width: 100%;
+		}
+		input {
+			width: 90%;
 		}
 
 		select {
-			width: 100%;
+			width: 90%;
+		}
+	}
+
+	.feature-photos-container{
+		display: flex;
+		flex-direction: row;
+		justify-content: space-around;
+		width: 90%;
+		margin: auto;
+		.upload-container {
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+			height: 110px;
+
+			label {
+				background-image: url('../../styles/assets/upload.png');
+				background-size: 80px 80px;
+				background-repeat: no-repeat;
+				background-position: center;
+				height: 80px;
+				width: 80px;
+				margin: auto;
+
+				input {
+					display: none;
+				}
+			}
+
+			.hideUploadImage {
+				display: none;
+			}
+
 		}
 	}
 

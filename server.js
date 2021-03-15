@@ -5,6 +5,7 @@ if (process.env.NODE_ENV !== 'production') {
 const express = require("express")
 const path = require("path")
 const app = express()
+const stripe = require('stripe')('sk_test_51HjT3BHrp1yZiedlQh8QdxBcJ3GLB9DUUL6KwnJXH0J7LMX2o9B2Lh9kVIYG1djnAhhPb7IRAdakgNScrw5ArBWD00cVcMNe77');
 var distance = require('google-distance');
 distance.apiKey = process.env.GOOGLE_MAPS;
 

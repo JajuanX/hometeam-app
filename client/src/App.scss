@@ -28,3 +28,32 @@ html {
 }
 
 
+#bottom-navbar {
+	position: fixed;
+	bottom: 20px;
+	width: 100%;
+
+	.button-container {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+		height: 70px;
+		padding: 5px 35px;
+		width: 85%;
+		border-radius: 500px;
+		height: 70px;
+		background-color: white;
+		margin: auto;
+		box-shadow: 1px 1px 15px grey;
+
+		img {
+			width: 50px;
+		}
+
+		.profile-picture {
+			border-radius: 500px;
+		}
+	}
+}
+

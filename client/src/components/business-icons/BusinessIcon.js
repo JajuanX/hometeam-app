@@ -22,7 +22,7 @@ import WebDesign from '../../styles/assets/business-icons/web-design.png';
 
 const BusinessIcon = ({icon, size}) => {
 	switch (icon) {
-		case 'Restaurant' : return <img alt="Restaurant" style={{height: `${size}`, width: `${size}`, margin: 'auto'}} src={Restaurant}></img>
+		case 'Restaurants' : return <img alt="Restaurant" style={{height: `${size}`, width: `${size}`, margin: 'auto'}} src={Restaurant}></img>
 		case 'Beauty' : return <img alt='Beauty' style={{height: `${size}`, width: `${size}`, margin: 'auto'}} src={Beauty}></img>
 		case 'Church' : return <img alt='Church' style={{height: `${size}`, width: `${size}`, margin: 'auto'}} src={Church}></img>
 		case 'Teaching' : return <img alt="Teaching" style={{height: `${size}`, width: `${size}`, margin: 'auto'}} src={Teaching}></img>

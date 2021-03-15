@@ -12,7 +12,7 @@ import HomeTeamLogo from '../../styles/assets/HomeTeamWording.png';
 						props.businessbusinessPhoto ?
 						<img className="titleImage" src={HomeTeamLogo} alt="Hometeam Logo"></img>
 						:
-						<img className="tileImage" src={props.business.businessPhoto} alt={props.business.businessName}></img>
+						<img className="tileImage" src={props.business.coverPhoto} alt={props.business.businessName}></img>
 							
 					}
 				</div>
