@@ -1,6 +1,10 @@
 import React from 'react';
 import { firestore, auth, createUserProfileDocument, storage, signOut } from '../../firebase';
 import './userProfile.scss';
+import * as firebase from 'firebase/app';
+import 'firebase/functions';
+import { collectIdsandDocs } from '../../utils/utilities';
+import BottomBar from '../../components/navigation/bottomNavigation/bottomBar';
 
 class UserProfile extends React.Component {
 	state = { 
@@ -8,28 +12,50 @@ class UserProfile extends React.Component {
 		email: '', 
 		photoURL: '',
 		uid: '',
+		user: null,
 		progress: 0,
 		photoReady: false,
 		upload: false,
 	}
 
+	_isMounted = false;
 	unsubscribeFromAuth = null;
 
 	componentDidMount = async () => { 
+		this._isMounted = true;
+
 		this.unsubscribeFromAuth = auth.onAuthStateChanged( async userAuth => {
 			if (userAuth) {
 				const userRef = await createUserProfileDocument(userAuth)
 				userRef.onSnapshot(snapshot => {
-					let user = {...snapshot.data()};
-					let {displayName, email, photoURL} = user					
-					this.setState({ displayName, email, photoURL, uid: snapshot.uid })
+					const user = collectIdsandDocs(snapshot);
+					if (this._isMounted) {
+						this.setState({ 
+							user: user,
+							displayName: user.displayName,
+							email: user.email, 
+							photoURL: user.photoURL,
+							uid: user.id,
+						}, () => this.isUserSubscribed())
+					}
 				})
 			} else {
 				this.props.history.push('/login');
-			}			
-		}); 
+			}
+		});
+	}
 
-
+	isUserSubscribed = async () => {
+		await firestore.collection('users')
+			.doc(this.state.user.id)
+			.collection('subscriptions')
+			.where('status', 'in', ['trialing', 'active'])
+			.onSnapshot(async (snapshot) => {
+				// In this implementation we only expect one active or trialing subscription to exist.
+				if(!snapshot.docs[0]) return;
+				const doc = collectIdsandDocs(snapshot.docs[0]);
+				this.setState({subscriptionInfo: doc})
+			});
 	}
 
 	get uid() { 
@@ -98,11 +124,24 @@ class UserProfile extends React.Component {
 		)
 	}
 
+	openCustomerPortal = async () => {
+		const functionRef = firebase
+			.app()
+			.functions('us-central1')
+			.httpsCallable('ext-firestore-stripe-subscriptions-createPortalLink');
+		const { data } = await functionRef({ returnUrl: `${window.location.origin}/user-profile` });
+		window.location.assign(data.url);
+	}
+
 	componentWillUnmount = () => {
 		this.unsubscribeFromAuth();
+		this._isMounted = false;
+		
 	}
 
 	render(){	
+		const { subscriptionInfo } = this.state;
+
 		return (
 			<div id="userProfile">
 				<h1>Edit Profile</h1>
@@ -137,9 +176,13 @@ class UserProfile extends React.Component {
 						autoComplete="off"
 					/>
 				<button type="submit">Update</button>
+				{ subscriptionInfo && subscriptionInfo.status === 'active' ?
+					<button id="subscriptionButton" type="button" onClick={() => this.openCustomerPortal()}>Subscription Portal</button>
+					: null
+				}
 				</form>
-			<button className="signout-button" type="button" onClick={signOut}>Sign Out</button>
-
+				<button className="signout-button" type="button" onClick={signOut}>Sign Out</button>
+				<BottomBar />
 			</div>
 		)
 		

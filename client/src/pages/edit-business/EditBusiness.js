@@ -3,7 +3,7 @@ import { FieldValue, firestore, auth, createUserProfileDocument } from '../../fi
 import { collectIdsandDocs } from '../../utils/utilities';
 import firebase from 'firebase/app';
 import { storage } from '../../firebase';
-import './createBusiness.scss';
+import './editBusiness.scss';
 import SimpleReactValidator from 'simple-react-validator';
 import Resizer from 'react-image-file-resizer';
 import TopBar from '../../components/navigation/topNavigation/topBar'
@@ -15,11 +15,10 @@ import PlacesAutocomplete, {
 	getLatLng,
   } from 'react-places-autocomplete';
 import { GeoFirestore } from 'geofirestore';
-import {loadStripe} from '@stripe/stripe-js';
 import Arrow from '../../styles/assets/down-arrow.png';
 import BottomBar from '../../components/navigation/bottomNavigation/bottomBar'
 
-class CreateBusiness extends React.Component {
+class EditBusiness extends React.Component {
 	state = { 
 		businessName: '',
 		businessDescription: '',
@@ -85,7 +84,45 @@ class CreateBusiness extends React.Component {
 				this.props.history.push('/login');
 			}
 		});
-		this.handleSubscriptions();
+		this.unsubscribeFromBusiness = firestore
+			.collection('businesses')
+			.doc(this.businessID)
+			.onSnapshot( async snapshot => {
+			let selectedBusiness = await collectIdsandDocs(snapshot);
+
+			if (selectedBusiness.empty) {
+					console.log('No matching documents.');
+				return;
+				} else {
+					this.handle_selected_business(selectedBusiness);
+				}
+			return selectedBusiness;
+			},
+			(error) => {
+					error.log(error);
+		}); 
+	}
+
+	handle_selected_business = (selectedBusiness) => {
+		this.setState({
+			businessName: selectedBusiness.businessName,
+			businessDescription: selectedBusiness.businessDescription,
+			businessCoordinates: selectedBusiness.businessCoordinates,
+			businessCategory: selectedBusiness.businessCategory,
+			businessAddress: selectedBusiness.businessAddress,
+			businessTwitter: selectedBusiness.businessTwitter,
+			businessFacebook: selectedBusiness.businessFacebook,
+			businessInstagram: selectedBusiness.businessInstagram,
+			businessHours: selectedBusiness.businessHours,
+			businessEmail: selectedBusiness.businessEmail,
+			businessWebsite: selectedBusiness.businessWebsite,
+			businessLocation: selectedBusiness.businessLocation,
+			businessNumber: selectedBusiness.businessNumber,
+			coverPhoto: selectedBusiness.coverPhoto,
+			featurePhoto1: selectedBusiness.featurePhoto1,
+			featurePhoto2: selectedBusiness.featurePhoto2,
+			featurePhoto3: selectedBusiness.featurePhoto3,
+		})
 	}
 
 	isUserSubscribed = async () => {
@@ -99,24 +136,6 @@ class CreateBusiness extends React.Component {
 				const doc = await collectIdsandDocs(snapshot.docs[0]);
 				this.setState({subscriptionInfo: doc})
 			});
-	}
-
-	handleSubscriptions = async () => {
-		const subscriptions = await firestore.collection('products').where('active', '==', true).get()
-			.then((snapshot) => {
-				console.log(snapshot);	
-				snapshot.forEach(async (doc) =>{
-					console.log(collectIdsandDocs(doc));
-					const priceSnap = await doc.ref.collection('prices').get();
-					priceSnap.docs.forEach((doc) => {
-						const subscriptionPrices = collectIdsandDocs(doc);
-						this.setState({ subscriptionPrices })
-						console.log(subscriptionPrices);
-					});
-					return priceSnap
-				});
-			})
-		this.setState({ subscriptions })
 	}
 
 	handleUploadChange = async (event) => {
@@ -206,38 +225,6 @@ class CreateBusiness extends React.Component {
 					})
 			}
 		)
-	}
-
-	subscribeToHomeTeam = async () => {
-		const stripePromise = loadStripe('pk_test_51HjT3BHrp1yZiedlk3GXPBcCTtE7OrL3nn3DZhrj0Jbj4eLZ4H69xLPmx2kPliARl50hJOEfHnv4GVM1aOEeBM4Q00hM0xQcDu');
-		const stripe = await stripePromise;
-		
-		const docRef = await firestore
-			.collection('users')
-			.doc(this.state.user.uid)
-			.collection('checkout_sessions')
-			.add({
-				price: 'price_1I7OQCHrp1yZiedl7mUHoPqV',
-				success_url: `${window.location.origin}/create-business`,
-				cancel_url: `${window.location.origin}/create-business`,
-			});
-			// Wait for the CheckoutSession to get attached by the extension
-			docRef.onSnapshot((snap) => {
-				const { error, sessionId } = snap.data();
-				if (error) {
-					// Show an error to your customer and 
-					// inspect your Cloud Function logs in the Firebase console.
-					alert(`An error occured: ${error.message}`);
-				}
-				if (sessionId) {
-					// We have a session, let's redirect to Checkout
-					// Init Stripe
-					stripe.redirectToCheckout({ sessionId })
-						.then((response) => {
-							console.log(response);
-						})
-				}
-			});
 	}
 
 	validate = () => {
@@ -391,8 +378,6 @@ class CreateBusiness extends React.Component {
 				: null
 			}
 			<h1 className="join">Join The HomeTeam</h1>
-			{	showCreate ?
-			<>
 				<form onSubmit={() => this.addBusiness()}>
 					<div>
 						<label className="business-label" htmlFor="businessName">Business Name</label>
@@ -637,22 +622,10 @@ class CreateBusiness extends React.Component {
 
 					<button type="submit" onClick={(event) => this.addBusiness(event)} className="button">Add Business</button>
 				</form>
-				</>
-				:
-				<div className="subscribe-section">
-					<Subscribe 
-						subscribe = {this.subscribeToHomeTeam}
-						isActive = {subscriptionInfo?.status}
-						toggleCreate = {this.toggleCreate}
-						user = {this.state.user}
-					/>
-				</div>
-				
-			}
 			<BottomBar />
 		</div>
 	)
   }
 }
 
-export default CreateBusiness
+export default EditBusiness

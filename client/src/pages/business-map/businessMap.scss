@@ -1,0 +1,27 @@
+#businessMap {
+	min-height: 110vh;
+	margin-top: 70px;
+
+	.title-block {
+		font-size: 2rem;
+		margin: 5px 10px;
+	}
+
+	.help-block {
+		display: grid;
+		place-items: center;
+		height: 200px;
+
+		p {
+			margin: auto;
+			font-size: 1.1rem;
+		}
+	}
+
+	.pin {
+		display: flex;
+		flex-direction: column;
+		justify-items: center;
+		width: max-content;
+	}
+}

@@ -1,34 +1,22 @@
-
-
-
-.businessTile {
-	margin-bottom: 20px;
+.business-tile {
 	transition: all 3s;
 	animation: fadeIn 2s forwards;
 	min-height: 100px;
 
 	.business-photo-container {	
 		.tileImage {
-			width: 170px;
+			width: 160px;
 			border-radius: 15px;
 			height: 100%;
 		}
 	}
-}
-
-
-
-.votes-container {
-	display: flex;
-	flex-direction: row;
-	margin: auto;
-	width: 100%;
-	min-height: 20px;
 
 	.business-info {
 		align-items: flex-start;
 		text-align: start;
-
+		width: 100%;
+		min-height: 20px;
+	
 		.business-name {
 			overflow: hidden;
 			text-overflow: ellipsis;
@@ -36,50 +24,22 @@
 			width: 150px;
 			display: block;
 			font-size: 16px;
-
+	
 		}
-
+	
 		.business-category {
 			font-size: .80rem;
 			color: grey;
+			margin-bottom: 15px;
 		}
 	}
+}
 
-	.vote {
-		display: flex;
-		flex-direction: column;
-		justify-content: space-around;
-		align-items: center;
-		width: 25px;
-		height: 40px;
-		font-size: 20px;
-		border-radius: 500px;
-		color: rgb(0, 223, 0);
-		padding: 5px;
-		
-		.arrow-up {
-			width: 0; 
-			height: 0; 
-			border-left: 8px solid transparent;
-			border-right: 8px solid transparent;
-			border-bottom: 8px solid black;
-		  }
-		  
-		  .arrow-down {
-			width: 0; 
-			height: 0; 
-			border-left: 8px solid transparent;
-			border-right: 8px solid transparent;
-			border-top: 8px solid black;
-		  }
+@keyframes fadeIn {
+	0% {
+		opacity: 0;
 	}
-
-	@keyframes fadeIn {
-		0% {
-			opacity: 0;
-		}
-		100% {
-			opacity: 100%;
-		}
+	100% {
+		opacity: 100%;
 	}
 }

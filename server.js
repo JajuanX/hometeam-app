@@ -5,9 +5,15 @@ if (process.env.NODE_ENV !== 'production') {
 const express = require("express")
 const path = require("path")
 const app = express()
+const cors = require("cors")
 const stripe = require('stripe')('sk_test_51HjT3BHrp1yZiedlQh8QdxBcJ3GLB9DUUL6KwnJXH0J7LMX2o9B2Lh9kVIYG1djnAhhPb7IRAdakgNScrw5ArBWD00cVcMNe77');
 var distance = require('google-distance');
 distance.apiKey = process.env.GOOGLE_MAPS;
+app.use(
+	cors({
+		origin: "*",
+	})
+)
 
 // JUST FOR DEMO PURPOSES, PUT YOUR ACTUAL API CODE HERE
 // app.get('/api/superhero/:hero', (request,response)=> {
@@ -35,6 +41,24 @@ app.get('/location/:longitude/:latitude', (request, response) => {
 		key: process.env.GOOGLE_MAPS
 	})
 })
+
+app.post('/create-checkout-session', async (request, response) => {
+	console.log('hit');
+	
+	// Call your backend to create the Checkout Session
+	 stripe.redirectToCheckout({ sessionId: session.id })
+	.then(function(result) {
+		// If `redirectToCheckout` fails due to a browser or network
+		// error, you should display the localized error message to your
+		// customer using `error.message`.
+		if (result.error) {
+		alert(result.error.message);
+		}
+	})
+
+})
+
+
 // END DEMO
 
 if (process.env.NODE_ENV === 'production') {

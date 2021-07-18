@@ -1,0 +1,54 @@
+#navigationMenu {
+	.modal-closed {
+		display: none;
+		transition: all .1s ease-in-out;
+		animation: slide-down 1s;
+
+		@keyframes slide-down {
+			0% {
+			  bottom: 500px;
+			}
+			100% {
+			  bottom: 0;
+			}
+		}
+
+	}
+
+	.modal-open {
+		position: fixed;
+		display: flex;
+		flex-direction: column;
+		left: 0;
+		bottom: 0px;
+		background-color: white;
+		width: 100%;
+		align-items: center;
+		animation: slide-up 1s;
+		transition: all .1s ease-in-out;
+
+		@keyframes slide-up {
+			0% {
+			  bottom: -500px;
+			}
+			100% {
+			  bottom: 0;
+			}
+		}
+
+		.navigation-items > div {
+			margin-bottom: 20px;
+			font-size: 1.5rem;
+			width: 100%;
+		}
+
+		button {
+			margin: 20px auto;
+			height: 15px;
+			background-color: black;
+			width: 100px;
+			border: none;
+			border-radius: 500px;
+		}
+	}
+}

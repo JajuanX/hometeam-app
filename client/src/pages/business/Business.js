@@ -4,8 +4,8 @@ import './business.scss'
 import { collectIdsandDocs } from '../../utils/utilities'
 import BusinessIcon from '../../components/business-icons/BusinessIcon'
 import GoogleMapReact from 'google-map-react';
-import UpArrow from '../../styles/assets/up-arrow.png';
-import DownArrow from '../../styles/assets/down-arrow.png';
+import MapMarker from '../../styles/assets/location.png';
+import Phone from '../../styles/assets/phone-call.png';
 import EmptyHeart from '../../styles/assets/clearHeart.png';
 import Heart from '../../styles/assets/heart.png';
 import FaceBook from '../../styles/assets/social-media/facebookLogo.png';
@@ -14,8 +14,12 @@ import Web from '../../styles/assets/social-media/website.png';
 import Twitter from '../../styles/assets/social-media/twitter.png';
 import YouTube from '../../styles/assets/social-media/youtube.png';
 import Email from '../../styles/assets/social-media/email.png';
-import ModalImage from "react-modal-image";
+
+// import ModalImage from "react-modal-image";
+import QRCode from "react-qr-code";
+import TopBar from '../../components/navigation/topNavigation/topBar'
 import { formatPhoneNumber } from 'react-phone-number-input'
+import BottomBar from '../../components/navigation/bottomNavigation/bottomBar'
 // formatPhoneNumber('+12133734253') === '(213) 373-4253'
 
 
@@ -26,22 +30,28 @@ class Business extends React.Component {
 		userDownVoted: null,
 		userUpVoted: null,
 		userFavorite: false,
+		reviewType: '',
+		disableReview: true,
 		comment: '',
 	}
-
+	_isMounted = false;
 	unsubscribeFromAuth = null; 
 	unsubscribeFromBusiness = null;
 	businessID = this.props.match.params.id;
 
-	componentDidMount = async () => {
-		this.unsubscribeFromAuth = auth.onAuthStateChanged( async userAuth => {
+	componentDidMount = () => {
+		this._isMounted = true;
+
+		this.unsubscribeFromAuth = auth.onAuthStateChanged( async userAuth => {			
 			if (userAuth) {
 				const userRef = await createUserProfileDocument(userAuth)
 				userRef.onSnapshot(snapshot => {
-					this.setState({ 
-						user: {uid: snapshot.id, ...snapshot.data()} 
-					}, this.handle_user_favorites)
-				})
+					if (this._isMounted) {
+						this.setState({ 
+							user: {uid: snapshot.id, ...snapshot.data()} 
+						}, this.handle_user_favorites)
+					}
+				})//todo: handle error for users not logged in 
 			} else {
 				this.setState({user: userAuth})
 			}			
@@ -63,7 +73,9 @@ class Business extends React.Component {
 			},
 			(error) => {
 					error.log(error);
-			}); 
+		}); 
+		
+		
 	}
 
 	get uid() { 
@@ -87,25 +99,16 @@ class Business extends React.Component {
 	}
 
 	handle_selected_business = (selectedBusiness) => {
-		console.log(selectedBusiness);
-		
-		selectedBusiness.upVoteCount = selectedBusiness.upvotes.length || 0;
-		selectedBusiness.downVoteCount = selectedBusiness.downvotes.length || 0;
-		selectedBusiness.userDownVoted = selectedBusiness.downvotes.includes(this.uid);
-		selectedBusiness.userUpVoted = selectedBusiness.upvotes.includes(this.uid);
-		
-		this.setState({ selectedBusiness, 
-			userDownVoted: selectedBusiness.userDownVoted,
-			userUpVoted: selectedBusiness.userUpVoted 
-		})
+		this.setState({ selectedBusiness })
 	}
 
 	handle_submit_comment = (event) => {
 		event.preventDefault();
-		const {comment} = this.state;
+		const {comment, reviewType} = this.state;
 		const { uid, displayName, email, photoURL } = this.state.user || {}
 		const comments = {
 		  comment ,
+		  reviewType,
 		  user: {
 			uid,
 			displayName,
@@ -124,31 +127,62 @@ class Business extends React.Component {
 
 	}
 
-	vote = (vote) => {
-		if (vote === "downvote") {
-			if(this.state.userDownVoted) return;
-			this.businessRef.update({
-				downvotes: FieldValue.arrayUnion(this.uid),
-				upvotes: FieldValue.arrayRemove(this.uid)
+	// vote = (vote) => {
+	// 	if (vote === "downvote") {
+	// 		if(this.state.userDownVoted) return;
+	// 		this.businessRef.update({
+	// 			downvotes: FieldValue.arrayUnion(this.uid),
+	// 			upvotes: FieldValue.arrayRemove(this.uid)
+	// 		})
+	// 		.then(()=> {
+	// 			console.log('Success');
+	// 			this.setState({ userDownVoted: true, userUpVoted: false })
+	// 		})
+	// 		.catch((error)=> {
+	// 			console.error(error);
+	// 		});
+	// 	}
+
+	// 	if (vote === "upvote") {
+	// 		if(this.state.userUpVoted) return;
+	// 		this.businessRef.update({
+	// 			upvotes: FieldValue.arrayUnion(this.uid),
+	// 			downvotes: FieldValue.arrayRemove(this.uid)
+	// 		})
+	// 		.then(()=> {
+	// 			console.log('Success');
+	// 			this.setState({ userUpVoted: true, userDownVoted: false})
+	// 		})
+	// 		.catch((error)=> {
+	// 			console.error(error);
+	// 		});
+	// 	}
+	// }
+
+	handle_add_to_favorites = () => {
+		this.setState(prevState => ({
+			userFavorite: !prevState.userFavorite
+		  }),() => this.setFavorite());
+	}
+	// There's a problem here!
+
+	setFavorite = () => {
+		if (this.state.userFavorite) {
+			this.userRef.update({
+				favorites: FieldValue.arrayUnion(this.businessID),
 			})
 			.then(()=> {
-				console.log('Success');
-				this.setState({ userDownVoted: true, userUpVoted: false })
+				console.log('User likes this business');
 			})
 			.catch((error)=> {
 				console.error(error);
 			});
-		}
-
-		if (vote === "upvote") {
-			if(this.state.userUpVoted) return;
-			this.businessRef.update({
-				upvotes: FieldValue.arrayUnion(this.uid),
-				downvotes: FieldValue.arrayRemove(this.uid)
+		} else {
+			this.userRef.update({
+				favorites: FieldValue.arrayRemove(this.businessID)
 			})
 			.then(()=> {
-				console.log('Success');
-				this.setState({ userUpVoted: true, userDownVoted: false})
+				console.log('User dislikes this business');
 			})
 			.catch((error)=> {
 				console.error(error);
@@ -156,38 +190,31 @@ class Business extends React.Component {
 		}
 	}
 
-	handle_add_to_favorites = () => {
-		this.setState(prevState => ({
-			userFavorite: !prevState.userFavorite
-		  }),() => {
-			if (this.state.userFavorite) {
-				this.userRef.update({
-					favorites: FieldValue.arrayUnion(this.businessID),
-				})
-				.then(()=> {
-					console.log('User likes this business');
-				})
-				.catch((error)=> {
-					console.error(error);
-				});
-			} else {
-				this.userRef.update({
-					favorites: FieldValue.arrayRemove(this.businessID)
-				})
-				.then(()=> {
-					console.log('User dislikes this business');
-				})
-				.catch((error)=> {
-					console.error(error);
-				});
-			}
-		})
+	addReview = (reviewType) => {
+		let review
+		switch (reviewType) {
+			case 'positive':
+				review = reviewType;
+				break;
+			case 'negative':
+				review = reviewType;
+				break;
+			case 'neutral':
+				review = reviewType;
+				break;
+			default:
+				break;
+		}
 
+		this.setState({reviewType: review, disableReview: false})
+		
 	}
 
 	componentWillUnmount = () => {
 		this.unsubscribeFromAuth();
 		this.unsubscribeFromBusiness();
+		this._isMounted = false;
+
 	}
 
 	handleChange = (event) => {
@@ -214,22 +241,33 @@ class Business extends React.Component {
 			lat: coordinates && coordinates.oa,
 			lng: coordinates && coordinates.ha,
 		}
-		console.log(this.state);
 		
 	return (
-		<div id="business">
-			<div className="info-card">
-				<img className='business-photo' src={coverPhoto} alt={businessName}></img>
-				<div className="main-info">
-					<h1>{businessName}</h1>
+		<div data-testid='business-page' id="businessCard">
+			<TopBar user={this.state.user}/>
+			<div className="main-media-container">
+				<img className='cover-photo' src={coverPhoto} alt={businessName}></img>
+				<div className="qrcode-container"><QRCode value="hey" size={150} /></div>
+			</div>
+			<div className="business-info-container">
+				<h3 id="business-name">{businessName}</h3>
+				<div className="address-container">
+					<img src={MapMarker} alt="Map Marker"></img>
 					<a target="_blank" 
 						rel="noopener noreferrer"
-						href={`https://www.google.com/maps/search/?api=1&query=${coordinates && coordinates.oa},${coordinates && coordinates.ha}`}><p>{businessAddress}</p></a>
-					<a href={`tel:${businessNumber}`}><p>{businessNumber}</p></a>
+						href={`https://www.google.com/maps/search/?api=1&query=${coordinates && coordinates.oa},${coordinates && coordinates.ha}`}>
+						<p>{businessAddress}</p>
+					</a>
+				</div>
+				<div className="phone-container">
+					<img src={Phone} alt="Phone"></img>
+					<a href={`tel:${businessNumber}`}>
+						<p>{`${formatPhoneNumber(businessNumber)}`}</p>
+					</a>
 				</div>
 			</div>
 			<hr></hr>
-			<div className="info-container">
+			<div className="business-specs-container">
 				<div className="info-box">
 					<h4>Category</h4>
 					{
@@ -238,16 +276,6 @@ class Business extends React.Component {
 						icon={businessCategory}
 						size="40px"
 					/>}
-				</div>
-				<div className="info-box">
-					<h4>Upvotes</h4>
-					<div className="green vote-counter">{this.state.selectedBusiness.upVoteCount}</div>
-					<div onClick={() => this.vote('upvote')}><img src={UpArrow} alt="up vote arrow"></img></div>
-				</div>
-				<div className="info-box">
-					<h4>Downvotes</h4>
-					<div className="red vote-counter">{this.state.selectedBusiness.downVoteCount}</div>
-					<div onClick={() => this.vote('downvote')}><img src={DownArrow} alt="down vote arrow"></img></div>
 				</div>
 				<div className="info-box last">
 					<h4>My Favorite</h4>
@@ -261,57 +289,101 @@ class Business extends React.Component {
 				</div>
 			</div>
 
-			<div className="about-the-business">
-				<h1>About this Business</h1>
+			<div className="about-the-business section">
+				<h1>About {businessName}</h1>
 				<p>{businessDescription}</p>
 			</div>
 
-			<h1>Featured Photos</h1>
-			<div className="feature-photo-container">
-				{featurePhoto1 && 
-				<ModalImage
-				className="feature-photo"
-				small={featurePhoto1}
-				large={featurePhoto1}
-				alt="Hello World!"
-			  />
-				}
-				{featurePhoto2 && <img className="feature-photo" alt="Feature 2" src={featurePhoto2}></img>}
-				{featurePhoto3 && <img className="feature-photo" alt="Feature 3" src={featurePhoto3}></img>}
+			<div className="section">
+				<h1>Featured Photos</h1>
+				<div className="feature-photo-container">
+					{featurePhoto1 && 
+						<img
+							className="feature-photo"
+							src={featurePhoto1}
+							alt="Hello World!"
+						></img>
+					}
+					{featurePhoto2 && <img className="feature-photo" alt="Feature 2" src={featurePhoto2}></img>}
+					{featurePhoto3 && <img className="feature-photo" alt="Feature 3" src={featurePhoto3}></img>}
 
+				</div>
 			</div>
 
-			<div className="social-media">
-				<h1> Follow Us On </h1>
+			<div className="social-media section">
+				<h1> Follow {businessName} On </h1>
 				<div className="social-container">
 					{ 
 					socialMedia && socialMedia.instagram ? 
-						<a target="_blank" rel="noopener noreferrer" href={socialMedia.instagram}><img className="social-media-icons" alt="instagram" src={Instagram}></img></a> : null
+							<div className="link-container">
+								<img className="social-media-icons" alt="instagram" src={Instagram}></img>
+								<a target="_blank" rel="noopener noreferrer" href={socialMedia.instagram}>{socialMedia.instagram}</a>
+							</div>
+						: null
 				}
 					{ 
 					socialMedia && socialMedia.twitter ? 
-						<a target="_blank" rel="noopener noreferrer" href={socialMedia.twitter}><img className="social-media-icons" alt="twitter" src={Twitter}></img></a> : null
+						<div className="link-container">
+							<img className="social-media-icons" alt="twitter" src={Twitter}></img>
+							<a target="_blank" rel="noopener noreferrer" href={socialMedia.twitter}>
+							{socialMedia.twitter}
+						</a> 
+						
+					</div>
+						: null
 				}
 					{ 
 					socialMedia && socialMedia.facebook ? 
-						<a target="_blank" rel="noopener noreferrer" href={socialMedia.facebook}><img className="social-media-icons" alt="facebook" src={FaceBook}></img></a> : null
+						<div className="link-container">
+							<img className="social-media-icons" alt="facebook" src={FaceBook}></img>
+							<a target="_blank" rel="noopener noreferrer" href={socialMedia.facebook}>
+							{socialMedia.facebook}
+						</a> 
+						
+					</div>
+						: null
 				}
 					{ 
 					socialMedia && socialMedia.website ? 
-						<a target="_blank" rel="noopener noreferrer" href={socialMedia.website}><img className="social-media-icons" alt="web" src={Web}></img></a> : null
+						<div className="link-container">
+							<img className="social-media-icons" alt="web" src={Web}></img>
+							<a target="_blank" rel="noopener noreferrer" href={socialMedia.website}>
+							{socialMedia.website}
+						</a> 
+						
+					</div>
+						: null
 				}
 					{ 
 					socialMedia && socialMedia.email ? 
-						<a target="_blank" rel="noopener noreferrer" href={socialMedia.email}><img className="social-media-icons" alt="email" src={Email}></img></a> : null
+						<div className="link-container">
+							<img className="social-media-icons" alt="email" src={Email}></img>
+							<a target="_blank" rel="noopener noreferrer" href={socialMedia.email}>
+							{socialMedia.email}
+						</a> 
+						
+					</div>
+						: null
 				}
 				{ 
 					socialMedia && socialMedia.youtube ? 
-						<a target="_blank" rel="noopener noreferrer" href={socialMedia.youtube}><img className="social-media-icons" alt="youtube" src={YouTube}></img></a> : null
+						<div className="link-container">
+							<img className="social-media-icons" alt="youtube" src={YouTube}></img>
+							<a target="_blank" rel="noopener noreferrer" href={socialMedia.youtube}>
+							{socialMedia.youtube}
+						</a> 
+						
+					</div>
+						: null
 				}
 				</div>
 			</div>
+			<div className="map review-section">
+				<h1>Where to find {businessName}</h1>
+			</div>
+
 			{ 
-				coordinates && <div style={{ height: '400px', width: 'auto', borderRadius: '50px', overflow: 'hidden' }}>
+				coordinates && <div style={{ height: '400px', width: 'auto', overflow: 'hidden', margin: '5px 0 10px 0' }}>
 					<GoogleMapReact
 						bootstrapURLKeys={{ key: process.env.REACT_APP_APIKEY }}
 						defaultCenter={location}
@@ -327,36 +399,47 @@ class Business extends React.Component {
 				</div> 
 			}
 
-			<div className="comment-section">
+			<div className="leave-review-container review-section">
 				<h1>LEAVE A REVIEW</h1>
+				<div className="review-buttons-container">
+					<button id="positive-button" type="button" onClick={() => this.addReview('positive')}>Positive</button>
+					<button id="neutral-button" type="button" onClick={() => this.addReview('neutral')}>Neutral</button>
+					<button id="negative-button" type="button" onClick={() => this.addReview('negative')}>Negative</button>
+				</div>
 					<form onSubmit={(e) => this.handle_submit_comment(e)}>
 						<textarea
-							placeholder="Comments"
+							className={`${this.state.reviewType}`}
+							placeholder="Select which type of review you want to leave for this business."
 							type="text"
 							name="comment"
 							value={this.state.comment}
 							onChange={(e) => this.handleChange(e)}
 							autoComplete="off"
+							height="250px"
+							disabled={this.state.disableReview}
 						/>
-						<button type="submit">Add Review</button>
+						<button disabled={this.state.disableReview} type="submit">Add Review</button>
 					</form>
 			</div>
-			<div className="comments">
+			<div className="review-container review-section">
 				<h1>REVIEWS</h1>
 				{
 					this.state.selectedBusiness.comments && this.state.selectedBusiness.comments.map((comment, index) => {
 						return (
-							<div className="comment" key={index}>
+							<div className="review" key={index}>
 								<img src={comment.user.photoURL} alt="user profile"></img>
-								<p>{comment.comment}</p>
+								<div className="review-holder">
+									<header><strong>{comment.user.displayName}</strong> left a <span className={comment.reviewType}>{comment.reviewType}</span> review.</header>
+									<p>{comment.comment}</p>
+								</div>
 							</div>
 						)
 					})
 				}
 			</div>
+			<BottomBar />
 		</div>
-	)
-  }
+	)}
 }
 
 export default Business

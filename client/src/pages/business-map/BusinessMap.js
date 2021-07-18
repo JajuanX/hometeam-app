@@ -2,18 +2,23 @@ import React from 'react'
 import { firestore, auth, createUserProfileDocument } from '../../firebase'
 import { collectIdsandDocs } from '../../utils/utilities'
 import BusinessIcon from '../../components/business-icons/BusinessIcon'
-import '../../App.scss'
+import './businessMap.scss'
 import GoogleMapReact from 'google-map-react';
 import BusinessDisplay from '../../components/business-display/BusinessDisplay'
+import TopBar from '../../components/navigation/topNavigation/topBar'
+import BottomBar from '../../components/navigation/bottomNavigation/bottomBar'
 
 const LocationPin = ({ business, icon, showBusiness}) => {
 	let pinnedBusiness = business;
 	return (
 	<div className="pin" onClick={() => showBusiness(pinnedBusiness)}>
-	  <BusinessIcon 
-		  icon={icon}
-		  size="40px"
-	  />
+		<div>
+			<BusinessIcon 
+				icon={icon}
+				size="40px"
+			/>
+		</div>
+	 	<h6 style={{fontSize: '12px', width: '60px'}}>{business.businessName}</h6>
 	</div>
   )}
 
@@ -30,16 +35,20 @@ class BusinessMap extends React.Component {
 		business: {},
 		showBusiness: false,
 	}
-
+	_isMounted = false;
 	unsubscribeFromAuth = null; 
 	unsubscribeFromBusinesses = null;
 
 	componentDidMount = async () => {
+		this._isMounted = true;
+
 		this.unsubscribeFromAuth = auth.onAuthStateChanged( async userAuth => {
 			if (userAuth) {
 				const userRef = await createUserProfileDocument(userAuth)
 				userRef.onSnapshot(snapshot => {
-					this.setState({ user: {uid: snapshot.id, ...snapshot.data()} })
+					if (this._isMounted) {
+						this.setState({ user: {uid: snapshot.id, ...snapshot.data()} })
+					}
 				})
 			} else {
 				this.setState({user: userAuth})
@@ -51,6 +60,7 @@ class BusinessMap extends React.Component {
 			this.setState({ businesses })
 		}); 
 		
+		
 	}
 
 	showBusiness = (business) => {
@@ -61,6 +71,7 @@ class BusinessMap extends React.Component {
 	componentWillUnmount = () => {
 		this.unsubscribeFromAuth();
 		this.unsubscribeFromBusinesses();
+		this._isMounted = false;
 
 	}
 
@@ -75,21 +86,25 @@ class BusinessMap extends React.Component {
 			lat: 25.990009,
 			lng: -80.1922577,
 		}
+		console.log(user);
+		
 
 	return (
 		<div id="businessMap">
-			<div style={{ height: '400px', width: '100%', borderRadius: '50px', overflow: 'hidden' }}>
+			<TopBar user={this.state.user} />
+			<div style={{ height: '350px', width: '100%', overflow: 'hidden' }}>
 				<GoogleMapReact
 					bootstrapURLKeys={{ key: process.env.REACT_APP_APIKEY }}
 					defaultCenter={location}
-					defaultZoom={11}
+					defaultZoom={13}
 					yesIWantToUseGoogleMapApiInternals
 					hoverDistance={40}
-					>
+				>
 					{
 						businesses && businesses.map( business => {
 							return (
 								<LocationPin
+									key={business.id}
 									showBusiness={this.showBusiness}
 									business={business}
 									lat={business.coordinates.oa}
@@ -112,11 +127,13 @@ class BusinessMap extends React.Component {
 						handle_add_to_favorites={this.handle_add_to_favorites}
 					/>
 					:
-					null
+					<div className="help-block">
+						<p>Select a business above to view more details.</p>
+					</div>
 			}
+			<BottomBar />
 		</div>
-	)
-  }
+	)}
 }
 
 export default BusinessMap

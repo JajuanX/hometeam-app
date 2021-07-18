@@ -3,7 +3,9 @@ import './search.scss'
 import TopBar from '../../components/navigation/topNavigation/topBar'
 import { firestore, auth, createUserProfileDocument } from '../../firebase'
 import { collectIdsandDocs } from '../../utils/utilities'
-import BusinessDisplay from '../../components/business-display/BusinessDisplay'
+import TileDisplay from '../../components/businessTile/TileDisplay'
+import Masonry from 'react-masonry-css';
+import BottomBar from '../../components/navigation/bottomNavigation/bottomBar'
 
 class Search extends React.Component {
 	state = { 
@@ -20,19 +22,24 @@ class Search extends React.Component {
 	'Financial', 'Fitness', 'Graphic Design', 'Web Services', 'Videography', 'Photography',
 	'Clothing', 'Printing Services', 'Car Wash', 'Real Estate', 'Coaching', 'Tattoo Artist',
 	'Art', 'Barbershop', 'Mobile Repair' ].sort();
- 
+	
+	_isMounted = false;
 	unsubscribeFromAuth = null; 
 	unsubscribeFromBusinesses = null;
 	pageSize = 8;
 	field = 'businessName'
 	filteredBusinesses = []
 
-	componentDidMount = async () => { 
+	componentDidMount = () => { 
+		this._isMounted = true;
+
 		this.unsubscribeFromAuth = auth.onAuthStateChanged( async userAuth => {
 			if (userAuth) {
 				const userRef = await createUserProfileDocument(userAuth)
 				userRef.onSnapshot(snapshot => {
-					this.setState({ user: {uid: snapshot.id, ...snapshot.data()} })
+					if (this._isMounted) {
+						this.setState({ user: {uid: snapshot.id, ...snapshot.data()} })
+					}
 				})
 				
 			} else {
@@ -78,14 +85,20 @@ class Search extends React.Component {
 
 	componentWillUnmount = () => {
 		this.unsubscribeFromAuth();
+		this._isMounted = false;
 	}
 
 	render(){
 		let filteredBusinesses = this.state.businesses.filter( business => {
-			if (business.businessName.toLowerCase().includes(this.state.searchString.toLowerCase())){
-				return business;
-			} 
-		})
+			return business.businessName.toLowerCase().includes(this.state.searchString.toLowerCase()
+			)}
+		);
+		const breakpointColumnsObj = {
+			default: 6,
+			1100: 6,
+			700: 2,
+			500: 2
+		};
 
 		return (
 			<div id="search-page">
@@ -95,7 +108,7 @@ class Search extends React.Component {
 					/>
 				</div>
 
-				<h1>Category</h1>
+				<h1>Select a Category</h1>
 				<div className="category-container">
 					{
 						this.businessTypes.map((category, index) => {
@@ -119,39 +132,45 @@ class Search extends React.Component {
 				<input
 					name="searchString"
 					type="text"
+					placeholder="Select a category then search by name"
 					value={this.state.searchString}
 					onChange={this.handleChange}
 					autoComplete="off"
 					disabled={this.state.businesses.length === 0}
 					/>
-				{ this.state.userSelectedCategory ? <div className="biz-container">
+				<div className="search-container">
+					{ this.state.userSelectedCategory ? 
+					<Masonry
+						breakpointCols={breakpointColumnsObj}
+						className="my-masonry-grid"
+						columnClassName="my-masonry-grid_column"
+					>
 						{
 							filteredBusinesses.map((business) => {
 								return (
-										<BusinessDisplay
+										<TileDisplay
 											key={business.id}
 											business={business}
 											id={business.id}
-											user={this.state.user}
-											handle_add_to_favorites={this.handle_add_to_favorites}
 										/>
 								)
 							})
 						}
-				</div>
-				:
-				<div className="user-guide">
-					Try selecting from a category above.
-				</div>
-				}
+					</Masonry>
+					:
+					<div className="user-guide">
+						Try selecting from a category above.
+					</div>
+					}
 				{ this.state.userSelectedCategory && this.state.businesses.length === 0 ?
 					<div className="user-guide">
 						No results found for the category {this.state.category}
 					</div> : null
 				}
+				</div>
+				<BottomBar />
 			</div>
-		)
-	}
+		)}
 }
 
 export default Search

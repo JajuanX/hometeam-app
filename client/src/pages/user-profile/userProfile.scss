@@ -3,6 +3,7 @@
 #userProfile {
 	display: grid;
 	place-items: center;
+	margin-bottom: 100px;
 
 	h1 {
 		font-size: 30px;
@@ -12,6 +13,10 @@
 	#userPhoto {
 		height: 150px;
 		border-radius: 50%;
+	}
+	.signout-button {
+		background-color: red;
+		color: black;
 	}
 
 	form {
@@ -40,6 +45,11 @@
 			background-color: $brand-primary;
 			border: none;
 			margin-top: 40px;
+		}
+
+		#subscriptionButton {
+			background-color: rgb(0, 226, 0);
+
 		}
 
 		.hide-upload-image {

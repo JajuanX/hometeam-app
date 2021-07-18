@@ -1,0 +1,57 @@
+#subscribe {
+	margin-top: 10px;
+
+	.subscribe-container {
+		display: flex;
+		justify-content: center;
+
+		.subscribe-instructions {
+			width: 90%;
+
+			p {
+				text-align: center;
+			}
+
+			.subscribe-step.two {
+				justify-content: start;
+			}
+
+			.subscribe-step {
+				display: flex;
+				flex-direction: column;
+				justify-content: space-between;
+				width: 100%;
+				margin-top: 10px;
+
+
+				.number {
+					font-size: 2.5rem;
+					margin-right: 10px;
+					color: #ef5f24;
+				}
+
+				.info {
+					.info-title {
+						font-size: 1.5rem;
+						margin-bottom: 5px;
+					}
+
+				}
+
+				button {
+					background-color: #2bef24;
+					width: 100px;
+					height: 30px;
+					margin-top: 10px;
+					border: none;
+					border-radius: 5px;
+				}
+			}
+		}
+	}
+	.info-text {
+		color: rgb(78, 78, 78);
+		font-size: 1rem;
+	}
+}
+// #ef5f24

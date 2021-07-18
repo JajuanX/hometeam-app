@@ -1,21 +1,17 @@
-import React from 'react'
-import './home.scss'
-import { Link } from 'react-router-dom'
-import TopBar from '../../components/navigation/topNavigation/topBar'
-import BottomBar from '../../components/navigation/bottomNavigation/bottomBar'
-import { firestore, auth, createUserProfileDocument } from '../../firebase'
-import { collectIdsandDocs } from '../../utils/utilities'
-import TileDisplay from '../../components/businessTile/TileDisplay'
+import React from 'react';
+import './home.scss';
+import { Link } from 'react-router-dom';
+import TopBar from '../../components/navigation/topNavigation/topBar';
+import { firestore, auth, createUserProfileDocument } from '../../firebase';
+import { collectIdsandDocs } from '../../utils/utilities';
+import TileDisplay from '../../components/businessTile/TileDisplay';
 import firebase from 'firebase/app';
 import { GeoFirestore } from 'geofirestore';
-import Button from '../../components/button/button';
 import Masonry from 'react-masonry-css';
 import { Waypoint } from 'react-waypoint';
-import HomeTeamLogo from '../../styles/assets/HomeTeamWording.png';
 import HomeTeamLogoNoWords from '../../styles/assets/HomeTeamNoWords.png';
 import SplashPage from '../../components/splash-page/splash-page';
-import Nearby from '../../styles/assets/nearby.png';
-
+import BottomBar from '../../components/navigation/bottomNavigation/bottomBar'
 
 class Home extends React.Component {
 	state = { 
@@ -25,13 +21,18 @@ class Home extends React.Component {
 		nearYou: false,
 		endPrevPagination: false,
 		currentPage: 1,
-		isLoading: false,
+		isLoading: true,
 		noBusinesses: false,
 		searching: false,
+		loading: false,
+		userFavoriteBusinesses: [],
 	}
- 
+
+	_isMounted = false;
 	unsubscribeFromAuth = null; 
 	unsubscribeFromBusinesses = null;
+	unsubsribeFromUserFavorites = null;
+	color = '#ef5f24';
 	pageSize = 8;
 	field = 'businessName'
 	businessTypes = [ 'Restaurants', 'Beauty', 'Church', 'Education', 'Event Planning', 
@@ -39,13 +40,16 @@ class Home extends React.Component {
 	'Clothing', 'Printing Services', 'Car Wash', 'Real Estate', 'Coaching', 'Tattoo Artist',
 	'Art', 'Barbershop', 'Mobile Repair' ].sort();
 
-	componentDidMount = async () => { 
-		this.setState({ isLoading: true })
+	componentDidMount = () => { 
+		this._isMounted = true;
+		
 		this.unsubscribeFromAuth = auth.onAuthStateChanged( async userAuth => {
 			if (userAuth) {
 				const userRef = await createUserProfileDocument(userAuth)
 				userRef.onSnapshot(snapshot => {
-					this.setState({ user: {uid: snapshot.id, ...snapshot.data()} }, () => this.handle_user_favorites())
+					if (this._isMounted) {
+						this.setState({ user: {uid: snapshot.id, ...snapshot.data()} }, () => this.get_user_favorites())
+					}
 				})
 				
 			} else {
@@ -57,15 +61,15 @@ class Home extends React.Component {
 			.orderBy(this.field)
 			.limit(this.pageSize)
 			.onSnapshot( snapshot => {
-			const businesses = snapshot.docs.map(collectIdsandDocs);			
+			const businesses = snapshot.docs.map(collectIdsandDocs);
 			this.setState({ businesses, isLoading: false })
-		  }, (error) => {
-			  error.log(error);
-		  }); 
+			}, (error) => {
+				error.log(error);
+		}); 
 		
 	}
 
-	handle_user_favorites = () => {
+	get_user_favorites = () => {
 		const userFavorites = this.state.user.favorites.map( favorite => {
 			return firestore.doc(`businesses/${favorite}`).get();
 		})
@@ -78,9 +82,14 @@ class Home extends React.Component {
 						...doc.data()
 						}
 				});
-				this.setState({userFavoriteBusinesses: businesses})
+				if (this._isMounted) {
+					this.setState({userFavoriteBusinesses: businesses})
+				}
 				
-			})//todo: catch error here 
+			})
+			.catch((error) => {
+				console.log(error);
+			})
 		
 	}
 
@@ -117,6 +126,9 @@ class Home extends React.Component {
 
 	getLocation = () => {
 		if (navigator.geolocation) {
+			this.setState({ loading: true })
+			console.log('running');
+			
 			navigator.geolocation.getCurrentPosition(this.getClosestBusinesses);
 		} else { 
 			
@@ -125,6 +137,8 @@ class Home extends React.Component {
 	
 
 	getClosestBusinesses = async (position) => {
+		console.log('working');
+		
 		const geofirestore = new GeoFirestore(firestore);
 		const geocollection = geofirestore.collection('businesses');
 		let lat = await position.coords.latitude;
@@ -170,6 +184,7 @@ class Home extends React.Component {
 	}
 
 	nearby = () => {
+		console.log(this.state.nearYou);
 		if (!this.state.nearYou) return
 		this.getLocation();
 	}
@@ -177,6 +192,7 @@ class Home extends React.Component {
 	componentWillUnmount = () => {
 		this.unsubscribeFromAuth();
 		this.unsubscribeFromBusinesses();
+		this._isMounted = false;
 	}
 
 	render(){
@@ -185,11 +201,10 @@ class Home extends React.Component {
 			1100: 6,
 			700: 2,
 			500: 2
-		  };
-		  
+		};
 
 		return (
-			<div id="home-page">
+			<div id="home-page" data-testid='home-page'>
 				<div id="top-of-page">
 					<TopBar 
 						user={this.state.user}
@@ -204,7 +219,7 @@ class Home extends React.Component {
 					{
 						this.state.userFavoriteBusinesses && this.state.userFavoriteBusinesses ? this.state.userFavoriteBusinesses.map((favoriteBusiness, index) => {
 							return (
-								<Link to={`/business/${favoriteBusiness.id}`} className="favorite-business" id={index}>
+								<Link to={`/business/${favoriteBusiness.id}`} className="favorite-business" key={favoriteBusiness.id}>
 									<img src={favoriteBusiness.coverPhoto} alt={favoriteBusiness.businessName}></img>
 									<h2>{favoriteBusiness.businessName}</h2>	
 								</Link>
@@ -222,12 +237,13 @@ class Home extends React.Component {
 								></input>
 						<label htmlFor="status">
 							<div className="status-switch"
-								data-unchecked={this.state.nearYou ? 'Show All' : 'Nearby'}
-								data-checked="">
+								data-unchecked={this.state.nearYou ? '' : 'Nearby Off'}
+								data-checked={this.state.nearYou ? 'Nearby On' : ''}>
 							</div>
 						</label>
 					</div>	
 				</div>
+				{/* <ScaleLoader color={this.color} loading={this.state.loading} css={override} size={150} /> */}
 
 				<div className="biz-container">
 					<Masonry
@@ -264,6 +280,8 @@ class Home extends React.Component {
 					/>
 				</div>
 				{ this.state.isLoading && <SplashPage /> }
+
+				<BottomBar />
 			</div>
 		)
 	}

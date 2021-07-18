@@ -1,7 +1,6 @@
 import React from 'react'
 import '../navBar.scss'
 import { Link } from 'react-router-dom'
-import Nearby from '../../../styles/assets/nearby.png';
 import HomeTeamLogo from '../../../styles/assets/HomeTeamWords.png';
 
 // Replace words with Icons hat represent each link
