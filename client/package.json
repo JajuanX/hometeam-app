@@ -8,6 +8,7 @@
     "axios": "^0.19.2",
     "enzyme": "^3.11.0",
     "firebase": "^7.15.1",
+    "firebase-functions": "^3.14.1",
     "firebaseui": "^4.7.3",
     "fs-extra": "^9.0.1",
     "geofirestore": "^4.0.1",
