@@ -107,8 +107,8 @@ class BusinessMap extends React.Component {
 									key={business.id}
 									showBusiness={this.showBusiness}
 									business={business}
-									lat={business.coordinates.oa}
-									lng={business.coordinates.ha}
+									lat={business.coordinates.Rc}
+									lng={business.coordinates.Ac}
 									icon={business.businessCategory}
 									businessName={business.businessName}
 									onGoogleApiLoaded={({ map, maps }) => handleApiLoaded(map, maps)}

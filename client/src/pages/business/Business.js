@@ -238,9 +238,11 @@ class Business extends React.Component {
 		
 		const location = {
 			address: '4821 sw 23rd st West Park, FL 33023',
-			lat: coordinates && coordinates.oa,
-			lng: coordinates && coordinates.ha,
+			lat: coordinates && coordinates.Rc,
+			lng: coordinates && coordinates.Ac,
 		}
+
+		console.log(this.state.selectedBusiness);
 		
 	return (
 		<div data-testid='business-page' id="businessCard">
@@ -255,7 +257,7 @@ class Business extends React.Component {
 					<img src={MapMarker} alt="Map Marker"></img>
 					<a target="_blank" 
 						rel="noopener noreferrer"
-						href={`https://www.google.com/maps/search/?api=1&query=${coordinates && coordinates.oa},${coordinates && coordinates.ha}`}>
+						href={`https://www.google.com/maps/search/?api=1&query=${coordinates && coordinates.Rc},${coordinates && coordinates.Ac}`}>
 						<p>{businessAddress}</p>
 					</a>
 				</div>
@@ -391,8 +393,8 @@ class Business extends React.Component {
 						yesIWantToUseGoogleMapApiInternals
 						>
 						<LocationPin
-							lat={coordinates.oa}
-							lng={coordinates.ha}
+							lat={coordinates.Rc}
+							lng={coordinates.Ac}
 							icon={businessCategory}
 						/>
 					</GoogleMapReact>

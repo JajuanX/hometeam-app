@@ -22,7 +22,7 @@ import Email from '../../styles/assets/social-media/email.png';
 			</div>
 			<a target="_blank" 
 					rel="noopener noreferrer"
-					href={`https://www.google.com/maps/search/?api=1&query=${props.business.coordinates.oa},${props.business.coordinates.ha}`}>
+					href={`https://www.google.com/maps/search/?api=1&query=${props.business.coordinates.Rc},${props.business.coordinates.Ac}`}>
 				<div className="open-map">
 					Open in Maps
 				</div>
