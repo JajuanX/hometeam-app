@@ -1,13 +1,9 @@
-import dotenv from 'dotenv';
+import 'dotenv/config.js';
 import firebase from 'firebase/app';
 import 'firebase/firestore';
 import 'firebase/auth';
 import 'firebase/storage';
 import { GeoFirestore } from 'geofirestore';
-
-if (process.env.NODE_ENV !== 'production') {
-	dotenv.config()
-}
 
 const config = {
     apiKey: process.env.REACT_APP_APIKEY,
