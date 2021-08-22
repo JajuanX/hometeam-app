@@ -11,6 +11,7 @@ import Masonry from 'react-masonry-css';
 import { Waypoint } from 'react-waypoint';
 import HomeTeamLogoNoWords from '../../styles/assets/HomeTeamNoWords.png';
 import BottomBar from '../../components/navigation/bottomNavigation/bottomBar'
+import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 class Home extends React.Component {
 	state = { 
@@ -24,6 +25,7 @@ class Home extends React.Component {
 		noBusinesses: false,
 		searching: false,
 		loading: false,
+		loaded: null,
 		userFavoriteBusinesses: [],
 	}
 
@@ -244,37 +246,39 @@ class Home extends React.Component {
 				</div>
 				{/* <ScaleLoader color={this.color} loading={this.state.loading} css={override} size={150} /> */}
 
-				{	this.state.businesses &&
-					<div className="biz-container">
-						<Masonry
-							breakpointCols={breakpointColumnsObj}
-							className="my-masonry-grid"
-							columnClassName="my-masonry-grid_column"
-						>
-							{
-								this.state.nearYou ? this.state.nearestBusinesses?.map((business) => {
-									return (
-												<TileDisplay
-													key={business.id}
-													business={business}
-													id={business.id}
-												/>
-									)
-								}):
-								this.state.businesses?.map((business) => {
-									return (
-											<TileDisplay
-												key={business.id}
-												business={business}
-												id={business.id}
-											/>
-									)
-								})
-							}
-						</Masonry>
-					</div>
-				}
-
+				<div className="biz-container">
+					<Masonry
+						breakpointCols={breakpointColumnsObj}
+						className="my-masonry-grid"
+						columnClassName="my-masonry-grid_column"
+					>
+						{
+							this.state.businesses?.map((business) => {
+								return(
+									<Link key={business.id} to={`/business/${business.id}`} className="business-tile">
+										<div className="business-photo-container">
+											<img
+												style={this.state.loaded ? null : {display: 'none'}} 
+												className="tileImage" 
+												src={business?.coverPhoto} 
+												alt={business.businessName} 
+												onLoad={() => this.setState({loaded: true})}/>		
+										</div>
+						
+										<div className="business-info">
+											<div className="business-name">
+												{business?.businessName}
+											</div>
+											<div className="business-category">
+												{business?.businessCategory}
+											</div>
+										</div>
+									</Link>
+								)
+							})
+						}
+					</Masonry>
+				</div>
 				<div className="waypoint">
 					<Waypoint
 						onEnter={this.nextPage}
