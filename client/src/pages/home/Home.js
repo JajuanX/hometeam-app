@@ -10,7 +10,6 @@ import { GeoFirestore } from 'geofirestore';
 import Masonry from 'react-masonry-css';
 import { Waypoint } from 'react-waypoint';
 import HomeTeamLogoNoWords from '../../styles/assets/HomeTeamNoWords.png';
-import SplashPage from '../../components/splash-page/splash-page';
 import BottomBar from '../../components/navigation/bottomNavigation/bottomBar'
 
 class Home extends React.Component {
@@ -281,7 +280,6 @@ class Home extends React.Component {
 						onEnter={this.nextPage}
 					/>
 				</div>
-				{ this.state.isLoading && <SplashPage /> }
 
 				<BottomBar />
 			</div>
