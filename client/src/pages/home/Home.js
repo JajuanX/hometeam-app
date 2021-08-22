@@ -245,34 +245,36 @@ class Home extends React.Component {
 				</div>
 				{/* <ScaleLoader color={this.color} loading={this.state.loading} css={override} size={150} /> */}
 
-				<div className="biz-container">
-					<Masonry
-						breakpointCols={breakpointColumnsObj}
-						className="my-masonry-grid"
-						columnClassName="my-masonry-grid_column"
-					>
-						{
-							this.state.nearYou ? this.state.nearestBusinesses.map((business) => {
-								return (
+				{	this.state.businesses &&
+					<div className="biz-container">
+						<Masonry
+							breakpointCols={breakpointColumnsObj}
+							className="my-masonry-grid"
+							columnClassName="my-masonry-grid_column"
+						>
+							{
+								this.state.nearYou ? this.state.nearestBusinesses?.map((business) => {
+									return (
+												<TileDisplay
+													key={business.id}
+													business={business}
+													id={business.id}
+												/>
+									)
+								}):
+								this.state.businesses?.map((business) => {
+									return (
 											<TileDisplay
 												key={business.id}
 												business={business}
 												id={business.id}
 											/>
-								)
-							}):
-							this.state.businesses.map((business) => {
-								return (
-										<TileDisplay
-											key={business.id}
-											business={business}
-											id={business.id}
-										/>
-								)
-							})
-						}
-					</Masonry>
-				</div>
+									)
+								})
+							}
+						</Masonry>
+					</div>
+				}
 
 				<div className="waypoint">
 					<Waypoint
