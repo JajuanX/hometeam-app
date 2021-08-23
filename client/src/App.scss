@@ -27,33 +27,3 @@ html {
 	color: white;
 }
 
-
-#bottom-navbar {
-	position: fixed;
-	bottom: 20px;
-	width: 100%;
-
-	.button-container {
-		display: flex;
-		flex-direction: row;
-		justify-content: space-between;
-		align-items: center;
-		height: 70px;
-		padding: 5px 35px;
-		width: 90%;
-		border-radius: 500px;
-		height: 50px;
-		background-color: white;
-		margin: auto;
-		box-shadow: 1px 1px 5px grey;
-
-		img {
-			width: 30px;
-		}
-
-		.profile-picture {
-			border-radius: 500px;
-		}
-	}
-}
-

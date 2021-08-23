@@ -60,13 +60,11 @@ class Home extends React.Component {
 			.orderBy(this.field)
 			.limit(this.pageSize)
 			.onSnapshot( snapshot => {
-			console.log(snapshot);
-			const businesses = snapshot.docs.map(collectIdsandDocs);
-			console.log(businesses);
-			this.setState({ businesses, isLoading: false })
+				const businesses = snapshot.docs.map(collectIdsandDocs);
+				this.setState({ businesses, isLoading: false })
 			}, (error) => {
-				error.log(error);
-		}); 
+					error.log(error);
+			}); 
 		
 	}
 
@@ -228,23 +226,6 @@ class Home extends React.Component {
 						}): null
 					}
 				</div>
-				<div className="top-buttons">
-					<div className="custom-checkbox">
-						<input id="status" 
-								type="checkbox" 
-								name="status"
-								value={this.state.nearYou}
-								onChange={() => this.toggleNearby()}
-								></input>
-						<label htmlFor="status">
-							<div className="status-switch"
-								data-unchecked={this.state.nearYou ? '' : 'Nearby Off'}
-								data-checked={this.state.nearYou ? 'Nearby On' : ''}>
-							</div>
-						</label>
-					</div>	
-				</div>
-				{/* <ScaleLoader color={this.color} loading={this.state.loading} css={override} size={150} /> */}
 
 				<div className="biz-container">
 					<Masonry

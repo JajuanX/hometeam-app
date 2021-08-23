@@ -2,13 +2,17 @@
 
 #businessCard {
 	width: auto;
-	display: grid;
+	display: flex;
+	flex-direction: column;
 	margin-top: 70px;
 	margin-bottom: 100px;
-	grid-gap: 5px;
 
 	.section {
-		padding: 20px 20px;
+		margin-bottom: 20px;
+	}
+
+	.business-info {
+		padding: 15px 20px 20px;
 		background-color: rgba(230, 182, 163, 0.363);
 		border-radius: 10px;
 		width: 90%;
@@ -78,7 +82,7 @@
 			color: black;
 			
 			p {
-				font-size: 12px;
+				font-size: 16px;
 
 			}
 		}
@@ -99,6 +103,10 @@
 			flex-wrap: nowrap;
 			align-items: center;
 			margin-bottom: 5px;
+		}
+
+		.address-container {
+			margin-top: 15px;
 		}
 	}
 
@@ -149,6 +157,7 @@
 		height: .1px;
 		border: none;
 		width: auto;
+		margin-bottom: 20px;
 	}
 
 	.about-the-business {
@@ -172,7 +181,7 @@
 	}
 
 	.social-media {
-
+		margin-bottom: 20px;
 		.social-container {
 			display: flex;
 			flex-direction: column;
@@ -183,9 +192,10 @@
 				display: flex;
 				flex-direction: row;
 				align-items: center;
+				margin-bottom: 10px;
 
 				a {
-					font-size: 12px;
+					font-size: 16px;
 					margin-left: 5px;
 					color: black;
 				}
@@ -206,7 +216,8 @@
 
 	.map {
 		h1 {
-			text-align: center;
+			text-align: left;
+			margin: 0;
 		}
 	}
 

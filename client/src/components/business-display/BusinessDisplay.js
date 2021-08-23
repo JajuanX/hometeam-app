@@ -6,6 +6,8 @@ import Web from '../../styles/assets/social-media/website.png';
 import Twitter from '../../styles/assets/social-media/twitter.png';
 import YouTube from '../../styles/assets/social-media/youtube.png';
 import Email from '../../styles/assets/social-media/email.png';
+import MapMarker from '../../styles/assets/location.png';
+import Phone from '../../styles/assets/phone-call.png';
 
 	const BusinessDisplay = (props) => (
 		<div id="businessDisplay" >
@@ -16,8 +18,11 @@ import Email from '../../styles/assets/social-media/email.png';
 				<div className="business-category">
 					{props.business.category}
 				</div>
-				<div className="phone-number">
-					<a href={`tel:${props.business.phoneNumber}`}><p>{props.business.phoneNumber}</p></a>
+				<div className="phone-number section">
+					<img src={Phone} alt="phone"/><a href={`tel:${props.business.phoneNumber}`}><p>{props.business.phoneNumber}</p></a>
+				</div>
+				<div className="address section">
+					<img src={MapMarker} alt="map"/><a href={`tel:${props.business.address}`}><p>{props.business.address}</p></a>
 				</div>
 			</div>
 			<a target="_blank" 
@@ -27,7 +32,7 @@ import Email from '../../styles/assets/social-media/email.png';
 					Open in Maps
 				</div>
 			</a>
-			<div className="section">
+			<div className="feature-photo-section">
 				<div className="feature-photo-container">
 					{props.business.featurePhoto1 && 
 						<img

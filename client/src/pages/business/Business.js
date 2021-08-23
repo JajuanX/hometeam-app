@@ -245,7 +245,7 @@ class Business extends React.Component {
 	return (
 		<div data-testid='business-page' id="businessCard">
 			<TopBar user={this.state.user}/>
-			<div className="main-media-container">
+			<div className="main-media-container section">
 				<img className='cover-photo' src={coverPhoto} alt={name}></img>
 				<div className="qrcode-container">
 					{ this.state.selectedBusiness && this.state.selectedBusiness.socialMedia ?
@@ -253,7 +253,7 @@ class Business extends React.Component {
 					}
 				</div>
 			</div>
-			<div className="business-info-container">
+			<div className="business-info-container section">
 				<h3 id="business-name">{name}</h3>
 				<div className="address-container">
 					<img src={MapMarker} alt="Map Marker"></img>
@@ -274,7 +274,7 @@ class Business extends React.Component {
 				</div>
 			</div>
 			<hr></hr>
-			<div className="business-specs-container">
+			<div className="business-specs-container section">
 				<div className="info-box">
 					<h4>Category</h4>
 					{
@@ -296,12 +296,12 @@ class Business extends React.Component {
 				</div>
 			</div>
 
-			<div className="about-the-business section">
+			<div className="about-the-business business-info section">
 				<h1>About {name}</h1>
 				<p>{description}</p>
 			</div>
 
-			<div className="section">
+			<div className="section business-info">
 				<h1>Featured Photos</h1>
 				<div className="feature-photo-container">
 					{featurePhoto1 && 
@@ -317,8 +317,8 @@ class Business extends React.Component {
 				</div>
 			</div>
 
-			<div className="social-media section">
-				<h1> Follow {name} On </h1>
+			<div className="social-media business-info section">
+				<h1> Social Media </h1>
 				<div className="social-container">
 					{ 
 					socialMedia && socialMedia.instagram ? 
@@ -385,28 +385,28 @@ class Business extends React.Component {
 				}
 				</div>
 			</div>
-			<div className="map review-section">
-				<h1>Where to find {name}</h1>
+			<div className="map review-section section">
+				<h1>Location</h1>
+				{ 
+					coordinates && <div style={{ height: '400px', width: 'auto', overflow: 'hidden', margin: '5px 0 10px 0' }}>
+						<GoogleMapReact
+							bootstrapURLKeys={{ key: process.env.REACT_APP_APIKEY }}
+							defaultCenter={location}
+							defaultZoom={15}
+							yesIWantToUseGoogleMapApiInternals
+							>
+							<LocationPin
+								lat={coordinates.Rc}
+								lng={coordinates.Ac}
+								icon={category}
+							/>
+						</GoogleMapReact>
+					</div> 
+				}
+
 			</div>
 
-			{ 
-				coordinates && <div style={{ height: '400px', width: 'auto', overflow: 'hidden', margin: '5px 0 10px 0' }}>
-					<GoogleMapReact
-						bootstrapURLKeys={{ key: process.env.REACT_APP_APIKEY }}
-						defaultCenter={location}
-						defaultZoom={15}
-						yesIWantToUseGoogleMapApiInternals
-						>
-						<LocationPin
-							lat={coordinates.Rc}
-							lng={coordinates.Ac}
-							icon={category}
-						/>
-					</GoogleMapReact>
-				</div> 
-			}
-
-			<div className="review-container review-section">
+			<div className="review-container review-section section">
 				<h1>REVIEWS</h1>
 				{
 					this.state.selectedBusiness?.comments ? this.state.selectedBusiness.comments.map((comment, index) => {
@@ -423,8 +423,8 @@ class Business extends React.Component {
 					<span style={{ marginTop: '60px' }}>No reviews yet</span>
 				}
 			</div>
-			
-			<div className="leave-review-container review-section">
+
+			<div className="leave-review-container review-section section">
 				<h1>LEAVE A REVIEW</h1>
 				<div className="review-buttons-container">
 					<button id="positive-button" type="button" onClick={() => this.addReview('positive')}>Positive</button>

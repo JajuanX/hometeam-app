@@ -1,5 +1,5 @@
 import React from 'react';
-import '../navBar.scss';
+import './bottomBar.scss';
 import { Link } from 'react-router-dom';
 import MapMarker from '../../../styles/assets/map-marker.png';
 import HomeTeam from '../../../styles/assets/HomeTeamNoWords.png';

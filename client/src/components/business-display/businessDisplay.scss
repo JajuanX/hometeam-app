@@ -5,19 +5,35 @@
 		display: flex;
 		flex-direction: column;
 		align-items: left;
-		align-content: space-between;
 		width: 90%;
-		margin: 10px auto;
 
 		.business-name {
-			font-size: 20px;
+			font-size: 30px;
 			font-weight: 800;
-
+			margin: 10px 20px 2px;
 		}
 
-		.business-category, .phone-number {
-			font-size: 16px;
-			margin-bottom: 2px;
+		.section {
+			display: flex;
+			flex-direction: row;
+			flex-wrap: nowrap;
+			align-items: center;
+			margin: 0 0 10px 20px;
+
+			img {
+				height: 23px;
+				margin-right: 5px;
+			}
+	
+			a {
+				font-size: 16px;
+			}
+		}
+
+		.business-category {
+			font-size: 20px;
+			font-weight: 100;
+			margin: 0px 20px 10px;
 		}
 
 	}
@@ -52,7 +68,7 @@
 		}
 	}
 
-	.section {
+	.feature-photo-section {
 		padding: 10px;
 		margin: 10px auto;
 		overflow-y: auto;
@@ -99,6 +115,7 @@
 	.social-media {
 		h1 {
 			text-align: center;
+			margin-bottom: 20px;
 		}
 		.social-container {
 			display: grid;
@@ -128,8 +145,7 @@
 	.business-description {
 		width: 90%;
 		margin: auto;
-		margin-bottom: 200px;
+		margin-bottom: 100px;
 		height: 200px;
-		overflow-y: scroll;
 	}
 }
