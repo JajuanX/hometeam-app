@@ -7,7 +7,6 @@ import './editBusiness.scss';
 import SimpleReactValidator from 'simple-react-validator';
 import Resizer from 'react-image-file-resizer';
 import TopBar from '../../components/navigation/topNavigation/topBar'
-import Subscribe from '../../components/subscribe/Subscribe'
 import { css } from "@emotion/core";
 import ScaleLoader from "react-spinners/ScaleLoader"
 import PlacesAutocomplete, {

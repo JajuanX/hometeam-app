@@ -18,7 +18,7 @@ const LocationPin = ({ business, icon, showBusiness}) => {
 				size="40px"
 			/>
 		</div>
-	 	<h6 style={{fontSize: '12px', width: '60px'}}>{business.businessName}</h6>
+	 	<h6 style={{fontSize: '12px', width: '60px'}}>{business.name}</h6>
 	</div>
   )}
 
@@ -109,8 +109,7 @@ class BusinessMap extends React.Component {
 									business={business}
 									lat={business.coordinates.Rc}
 									lng={business.coordinates.Ac}
-									icon={business.businessCategory}
-									businessName={business.businessName}
+									icon={business.category}
 									onGoogleApiLoaded={({ map, maps }) => handleApiLoaded(map, maps)}
 								/>
 							)

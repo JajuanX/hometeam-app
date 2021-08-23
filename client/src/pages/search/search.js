@@ -27,7 +27,7 @@ class Search extends React.Component {
 	unsubscribeFromAuth = null; 
 	unsubscribeFromBusinesses = null;
 	pageSize = 8;
-	field = 'businessName'
+	field = 'name'
 	filteredBusinesses = []
 
 	componentDidMount = () => { 
@@ -57,7 +57,7 @@ class Search extends React.Component {
 
 	searchByTyping = () => {
 		this.filteredBusinesses = this.filteredBusinesses.filter( business => {
-			if (business.businessName.includes(this.state.searchString)){
+			if (business.name.includes(this.state.searchString)){
 				return business;
 			} 
 			return this.filteredBusinesses;
@@ -68,7 +68,7 @@ class Search extends React.Component {
 		this.setState({ isLoading: true})
 
 		this.unsubscribeFromBusinesses = await firestore.collection('businesses')
-			.where('businessCategory', '==', `${category}`)
+			.where('category', '==', `${category}`)
 			.get();
 		let results = this.unsubscribeFromBusinesses.docs.map(collectIdsandDocs);
 		if(results) this.filteredBusinesses = results;
@@ -90,7 +90,7 @@ class Search extends React.Component {
 
 	render(){
 		let filteredBusinesses = this.state.businesses.filter( business => {
-			return business.businessName.toLowerCase().includes(this.state.searchString.toLowerCase()
+			return business.name.toLowerCase().includes(this.state.searchString.toLowerCase()
 			)}
 		);
 		const breakpointColumnsObj = {

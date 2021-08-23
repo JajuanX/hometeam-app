@@ -33,7 +33,7 @@ class Home extends React.Component {
 	unsubsribeFromUserFavorites = null;
 	color = '#ef5f24';
 	pageSize = 8;
-	field = 'businessName'
+	field = 'name'
 	businessTypes = [ 'Restaurants', 'Beauty', 'Church', 'Education', 'Event Planning', 
 	'Financial', 'Fitness', 'Graphic Design', 'Web Services', 'Videography', 'Photography',
 	'Clothing', 'Printing Services', 'Car Wash', 'Real Estate', 'Coaching', 'Tattoo Artist',
@@ -56,11 +56,13 @@ class Home extends React.Component {
 			}			
 		}); 
 		this.unsubscribeFromBusinesses = firestore
-			.collection('businesses')
+			.collection("businesses")
 			.orderBy(this.field)
 			.limit(this.pageSize)
 			.onSnapshot( snapshot => {
+			console.log(snapshot);
 			const businesses = snapshot.docs.map(collectIdsandDocs);
+			console.log(businesses);
 			this.setState({ businesses, isLoading: false })
 			}, (error) => {
 				error.log(error);
@@ -99,7 +101,7 @@ class Home extends React.Component {
 		const last = this.state.businesses[this.state.businesses.length - 1];
 		this.unsubscribeFromBusinesses = firestore.collection('businesses')
 			.orderBy(this.field)
-			.startAfter(last.businessName)
+			.startAfter(last.name)
 			.limit(this.pageSize)
 			.onSnapshot( snapshot => {
 				const nextgroup = snapshot.docs.map(collectIdsandDocs);
@@ -219,8 +221,8 @@ class Home extends React.Component {
 						this.state.userFavoriteBusinesses && this.state.userFavoriteBusinesses ? this.state.userFavoriteBusinesses.map((favoriteBusiness, index) => {
 							return (
 								<Link to={`/business/${favoriteBusiness.id}`} className="favorite-business" key={favoriteBusiness.id}>
-									<img src={favoriteBusiness.coverPhoto} alt={favoriteBusiness.businessName}></img>
-									<h2>{favoriteBusiness.businessName}</h2>	
+									<img src={favoriteBusiness.coverPhoto} alt={favoriteBusiness.name}></img>
+									<h2>{favoriteBusiness.name}</h2>	
 								</Link>
 							)
 						}): null
@@ -244,27 +246,25 @@ class Home extends React.Component {
 				</div>
 				{/* <ScaleLoader color={this.color} loading={this.state.loading} css={override} size={150} /> */}
 
-				{	this.state.businesses &&
-					<div className="biz-container">
-						<Masonry
-							breakpointCols={breakpointColumnsObj}
-							className="my-masonry-grid"
-							columnClassName="my-masonry-grid_column"
-						>
-							{
-								this.state.businesses?.map((business) => {
-									return (
-											<TileDisplay
-												key={business.id}
-												business={business}
-												id={business.id}
-											/>
-									)
-								})
-							}
-						</Masonry>
-					</div>
-				}
+				<div className="biz-container">
+					<Masonry
+						breakpointCols={breakpointColumnsObj}
+						className="my-masonry-grid"
+						columnClassName="my-masonry-grid_column"
+					>
+						{
+							this.state.businesses?.map((business) => {
+								return (
+										<TileDisplay
+											key={business.id}
+											business={business}
+											id={business.id}
+										/>
+								)
+							})
+						}
+					</Masonry>
+				</div>
 
 				<div className="waypoint">
 					<Waypoint

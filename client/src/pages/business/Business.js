@@ -20,8 +20,6 @@ import QRCode from "react-qr-code";
 import TopBar from '../../components/navigation/topNavigation/topBar'
 import { formatPhoneNumber } from 'react-phone-number-input'
 import BottomBar from '../../components/navigation/bottomNavigation/bottomBar'
-// formatPhoneNumber('+12133734253') === '(213) 373-4253'
-
 
 class Business extends React.Component {
 	state = { 
@@ -30,7 +28,7 @@ class Business extends React.Component {
 		userDownVoted: null,
 		userUpVoted: null,
 		userFavorite: false,
-		reviewType: '',
+		reviewType: 'positive',
 		disableReview: true,
 		comment: '',
 	}
@@ -223,12 +221,12 @@ class Business extends React.Component {
 
   render(){
 		const { 	
-			businessCategory,
-			businessAddress,
-			businessNumber,
-			businessDescription,
+			category,
+			address,
+			phoneNumber,
+			description,
 			socialMedia,
-			businessName,
+			name,
 			coverPhoto,
 			featurePhoto1,
 			featurePhoto2,
@@ -242,30 +240,37 @@ class Business extends React.Component {
 			lng: coordinates && coordinates.Ac,
 		}
 
-		console.log(this.state.selectedBusiness);
+		console.log(this.state.selectedBusiness.phoneNumber);
 		
 	return (
 		<div data-testid='business-page' id="businessCard">
 			<TopBar user={this.state.user}/>
 			<div className="main-media-container">
-				<img className='cover-photo' src={coverPhoto} alt={businessName}></img>
-				<div className="qrcode-container"><QRCode value="hey" size={150} /></div>
+				<img className='cover-photo' src={coverPhoto} alt={name}></img>
+				<div className="qrcode-container">
+					{ this.state.selectedBusiness && this.state.selectedBusiness.socialMedia ?
+						<QRCode value={this.state.selectedBusiness?.socialMedia?.website} size={150} />: null
+					}
+				</div>
 			</div>
 			<div className="business-info-container">
-				<h3 id="business-name">{businessName}</h3>
+				<h3 id="business-name">{name}</h3>
 				<div className="address-container">
 					<img src={MapMarker} alt="Map Marker"></img>
 					<a target="_blank" 
 						rel="noopener noreferrer"
 						href={`https://www.google.com/maps/search/?api=1&query=${coordinates && coordinates.Rc},${coordinates && coordinates.Ac}`}>
-						<p>{businessAddress}</p>
+						<p>{address}</p>
 					</a>
 				</div>
 				<div className="phone-container">
 					<img src={Phone} alt="Phone"></img>
-					<a href={`tel:${businessNumber}`}>
-						<p>{`${formatPhoneNumber(businessNumber)}`}</p>
-					</a>
+					{ 
+						this.state.selectedBusiness && this.state.selectedBusiness.phoneNumber ?
+							<a href={`tel:${this.state.selectedBusiness.phoneNumber}`}>
+								<p>{this.state.selectedBusiness.phoneNumber}</p>
+							</a> : null
+					}
 				</div>
 			</div>
 			<hr></hr>
@@ -273,9 +278,9 @@ class Business extends React.Component {
 				<div className="info-box">
 					<h4>Category</h4>
 					{
-					businessCategory &&
+					category &&
 					<BusinessIcon 
-						icon={businessCategory}
+						icon={category}
 						size="40px"
 					/>}
 				</div>
@@ -292,8 +297,8 @@ class Business extends React.Component {
 			</div>
 
 			<div className="about-the-business section">
-				<h1>About {businessName}</h1>
-				<p>{businessDescription}</p>
+				<h1>About {name}</h1>
+				<p>{description}</p>
 			</div>
 
 			<div className="section">
@@ -313,7 +318,7 @@ class Business extends React.Component {
 			</div>
 
 			<div className="social-media section">
-				<h1> Follow {businessName} On </h1>
+				<h1> Follow {name} On </h1>
 				<div className="social-container">
 					{ 
 					socialMedia && socialMedia.instagram ? 
@@ -381,7 +386,7 @@ class Business extends React.Component {
 				</div>
 			</div>
 			<div className="map review-section">
-				<h1>Where to find {businessName}</h1>
+				<h1>Where to find {name}</h1>
 			</div>
 
 			{ 
@@ -395,12 +400,30 @@ class Business extends React.Component {
 						<LocationPin
 							lat={coordinates.Rc}
 							lng={coordinates.Ac}
-							icon={businessCategory}
+							icon={category}
 						/>
 					</GoogleMapReact>
 				</div> 
 			}
 
+			<div className="review-container review-section">
+				<h1>REVIEWS</h1>
+				{
+					this.state.selectedBusiness?.comments ? this.state.selectedBusiness.comments.map((comment, index) => {
+						return (
+							<div className="review" key={index}>
+								<img src={comment.user.photoURL} alt="user profile"></img>
+								<div className="review-holder">
+									<header><strong>{comment.user.displayName}</strong> left a <span className={comment.reviewType}>{comment.reviewType}</span> review.</header>
+									<p>{comment.comment}</p>
+								</div>
+							</div>
+						)
+					}) :
+					<span style={{ marginTop: '60px' }}>No reviews yet</span>
+				}
+			</div>
+			
 			<div className="leave-review-container review-section">
 				<h1>LEAVE A REVIEW</h1>
 				<div className="review-buttons-container">
@@ -423,22 +446,7 @@ class Business extends React.Component {
 						<button disabled={this.state.disableReview} type="submit">Add Review</button>
 					</form>
 			</div>
-			<div className="review-container review-section">
-				<h1>REVIEWS</h1>
-				{
-					this.state.selectedBusiness.comments && this.state.selectedBusiness.comments.map((comment, index) => {
-						return (
-							<div className="review" key={index}>
-								<img src={comment.user.photoURL} alt="user profile"></img>
-								<div className="review-holder">
-									<header><strong>{comment.user.displayName}</strong> left a <span className={comment.reviewType}>{comment.reviewType}</span> review.</header>
-									<p>{comment.comment}</p>
-								</div>
-							</div>
-						)
-					})
-				}
-			</div>
+
 			<BottomBar />
 		</div>
 	)}

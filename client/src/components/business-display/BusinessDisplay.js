@@ -11,13 +11,13 @@ import Email from '../../styles/assets/social-media/email.png';
 		<div id="businessDisplay" >
 			<div className="info-container">
 				<div className="business-name">
-					{props.business.businessName}
+					{props.business.name}
 				</div>
 				<div className="business-category">
-					{props.business.businessCategory}
+					{props.business.category}
 				</div>
 				<div className="phone-number">
-					<a href={`tel:${props.business.businessNumber}`}><p>{props.business.businessNumber}</p></a>
+					<a href={`tel:${props.business.phoneNumber}`}><p>{props.business.phoneNumber}</p></a>
 				</div>
 			</div>
 			<a target="_blank" 
@@ -71,7 +71,7 @@ import Email from '../../styles/assets/social-media/email.png';
 					}
 					</div>
 				</div> : null }
-				<p className="business-description">{props.business.businessDescription}</p>
+				<p className="business-description">{props.business.description}</p>
 			</div>
 		</div>
 		

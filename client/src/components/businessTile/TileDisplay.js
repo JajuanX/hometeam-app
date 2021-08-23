@@ -8,20 +8,31 @@ const TileDisplay = (props) => {
 	return (
 		<Link key={props.business.id} to={`/business/${props.business.id}`} className="business-tile">
 			<div className="business-photo-container">
-				<img
+				{	loaded ? null : (
+						<div
+							style={{
+								background: 'lightgrey',
+								borderRadius: '15px',
+								height: '200px',
+								width: '160px',
+								marginBottom: '3px',
+							}}
+						/>)
+				}
+				<img className="tileImage" 
 					style={ loaded ? null : {display: 'none'}} 
-					className="tileImage" 
-					src={props.business?.coverPhoto} 
-					alt={props.business?.businessName} 
-					onLoad={() => setLoaded(true)}/>		
+					src={props.business.coverPhoto} 
+					alt={props.business.name} 
+					onLoad={() => setLoaded(true)}
+				/>
 			</div>
 
 			<div className="business-info">
 				<div className="business-name">
-					{props.business?.businessName}
+					{props.business.name}
 				</div>
 				<div className="business-category">
-					{props.business?.businessCategory}
+					{props.business.category}
 				</div>
 			</div>
 		</Link>

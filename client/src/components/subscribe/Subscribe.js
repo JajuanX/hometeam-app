@@ -19,12 +19,17 @@ const Subscribe = (props) => (
 				<div className="subscribe-step two">
 					<div className="number">2.</div>
 					<div className="info">
-						<div className="info-title">Create Your Business Profile</div>
+						<div className="info-title">
+							{	props.user && props.userHasBusiness ?
+								<span>Edit Your Business Profile</span>:
+								<span>Create Your Business Profile</span>
+							}
+						</div>
 						<div className="info-text">Once you subscribe to hometeam, you'll have access to creating your business.</div>
 					</div>
 					{ 
-						props.user && props.user.userBusinesses >= 1 ?
-							<button type="button" onClick={props.toggleCreate}>Edit Your Business</button> :
+						props.user && props.userHasBusiness ?
+							<button type="button" onClick={props.toggleCreate}>Edit</button> :
 							<button type="button" disabled={!props.isActive} onClick={props.toggleCreate}>Create</button>
 					}
 				</div>

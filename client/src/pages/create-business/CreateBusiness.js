@@ -21,20 +21,23 @@ import BottomBar from '../../components/navigation/bottomNavigation/bottomBar'
 
 class CreateBusiness extends React.Component {
 	state = { 
-		businessName: '',
-		businessDescription: '',
-		businessCoordinates: [],
-		businessPhoto: [],
-		businessCategory: '',
-		businessAddress: '',
-		businessTwitter: '',
-		businessFacebook: '',
-		businessInstagram: '',
-		businessHours: '',
-		businessEmail:'',
-		businessWebsite: '',
-		businessLocation: {},
-		businessNumber: '',
+		name: '',
+		description: '',
+		coordinates: [],
+		photo: [],
+		category: '',
+		address: '',
+		twitter: '',
+		facebook: '',
+		instagram: '',
+		hours: '',
+		email:'',
+		website: '',
+		location: {},
+		city: '',
+		state: '',
+		zipCode: '',
+		phoneNumber: '',
 		coverPhoto: null,
 		featurePhoto1: null,
 		featurePhoto2: null,
@@ -44,6 +47,7 @@ class CreateBusiness extends React.Component {
 		isSubscribed: false,
 		showCreate: false,
 		subscriptionPrices: [],
+		userHasBusiness: false,
 	}
 	validator = new SimpleReactValidator({autoForceUpdate: this});
 	_isMounted = false;
@@ -78,17 +82,22 @@ class CreateBusiness extends React.Component {
 				const userRef = await createUserProfileDocument(userAuth)
 				userRef.onSnapshot(snapshot => {
 					if (this._isMounted) {
-						this.setState({ user: {uid: snapshot.id, ...snapshot.data()}}, () => this.isUserSubscribed())
+						this.setState({ user: {uid: snapshot.id, ...snapshot.data()}}, () => this.handle_user())
 					}
 				})
 			} else {
 				this.props.history.push('/login');
 			}
 		});
-		this.handleSubscriptions();
+		
 	}
 
-	isUserSubscribed = async () => {
+	handle_user = () => {
+		this.handle_userHasBusiness();
+		this.handle_isUserSubscribed();
+	}
+
+	handle_isUserSubscribed = async () => {
 		await firestore.collection('users')
 			.doc(this.state.user.uid)
 			.collection('subscriptions')
@@ -98,14 +107,60 @@ class CreateBusiness extends React.Component {
 				if(!snapshot.docs[0]) return;
 				const doc = await collectIdsandDocs(snapshot.docs[0]);
 				this.setState({subscriptionInfo: doc})
-			});
+			})
+
+	}
+
+	handle_userHasBusiness = () => {
+		if (this.state.user.userBusinesses.length > 0) {
+			this.setState({ userHasBusiness: true }, () => this.handle_getUserBusiness())
+		}
+	}
+
+	handle_getUserBusiness = () => {
+		firestore
+			.collection('businesses')
+			.doc(this.state.user.userBusinesses[0])
+			.onSnapshot( async snapshot => {
+			let selectedBusiness = await collectIdsandDocs(snapshot);
+			console.log(selectedBusiness);
+			if (selectedBusiness.empty) {
+				console.log('No matching documents.');
+				return;
+				} else {
+					this.setState({
+						name: selectedBusiness.name,
+						description: selectedBusiness.description,
+						coordinates: selectedBusiness.coordinates,
+						photo: selectedBusiness.photo,
+						category: selectedBusiness.category,
+						address: selectedBusiness.address,
+						twitter: selectedBusiness.socialMedia?.twitter || '',
+						facebook: selectedBusiness.socialMedia?.facebook || '',
+						instagram: selectedBusiness.socialMedia?.instagram || '',
+						hours: selectedBusiness.hours,
+						email: selectedBusiness.email,
+						website: selectedBusiness.socialMedia?.website || '',
+						location: selectedBusiness.location,
+						phoneNumber: selectedBusiness.phoneNumber,
+						coverPhoto: selectedBusiness.coverPhoto,
+						featurePhoto1: selectedBusiness.featurePhoto1,
+						featurePhoto2: selectedBusiness.featurePhoto2,
+						featurePhoto3: selectedBusiness.featurePhoto3,
+						zipCode: selectedBusiness.zipCode,
+					});
+				}
+			},
+			(error) => {
+					error.log(error);
+		}); 
 	}
 
 	handleSubscriptions = async () => {
 		const subscriptions = await firestore.collection('products').where('active', '==', true).get()
 			.then((snapshot) => {
-				console.log(snapshot);	
-				snapshot.forEach(async (doc) =>{
+				console.log(snapshot);
+				snapshot.forEach(async (doc) => {
 					console.log(collectIdsandDocs(doc));
 					const priceSnap = await doc.ref.collection('prices').get();
 					priceSnap.docs.forEach((doc) => {
@@ -150,23 +205,20 @@ class CreateBusiness extends React.Component {
 	handleChange = (event) => {
 		let phoneNumber = event.target.value;
 		event.preventDefault();
-		if (event.target.name === 'businessNumber') {
+		if (event.target.name === 'phoneNumber') {
 			
-			this.setState(prevState => ({ businessNumber: this.normalizeInput(phoneNumber, prevState.businessPhone) }));
+			this.setState(prevState => ({ phoneNumber: this.normalizeInput(phoneNumber, prevState.businessPhone) }));
 		} else {
 			this.setState({[event.target.name]: event.target.value})
 		}
 	}
 
-	handleAddressChange = (businessAddress) => {
-		console.log(businessAddress);
-		
-		this.setState({ businessAddress });
-
+	handleAddressChange = (address) => {		
+		this.setState({ address });
 	}
 
-	handleSelect = businessAddress => {
-		const splitAddress = businessAddress.split(', ');
+	handleSelect = (selectedAddress) => {
+		const splitAddress = selectedAddress.split(', ');
 		const [ address, city, state, country ] = splitAddress;
 		const businessLocation = {
 			address,
@@ -174,11 +226,10 @@ class CreateBusiness extends React.Component {
 			state,
 			country
 		}
-		console.log(address, city, state, country);
-		geocodeByAddress(businessAddress)
-		.then(results => getLatLng(results[0]))
-		.then(latLng => this.setState({ businessAddress, businessCoordinates: latLng, businessLocation }))
-		.catch(error => console.error('Error', error));		
+		geocodeByAddress(selectedAddress)
+			.then(results => getLatLng(results[0]))
+			.then(latLng => this.setState({ selectedAddress, coordinates: latLng, businessLocation, city: businessLocation.city, state: businessLocation.state }))
+			.catch(error => console.error('Error', error));
 	};
 
 	handleUpload = (fileName, targetName) => {
@@ -253,6 +304,10 @@ class CreateBusiness extends React.Component {
 		return firestore.doc(`users/${this.uid}`);
 	}
 
+	get businessRef() {
+		return firestore.doc(`businesses/${this.state.user.userBusinesses[0]}`);
+	}
+
 	addBusiness = async event => {
 		event.preventDefault();
 		if(!this.validator.allValid()){
@@ -261,47 +316,52 @@ class CreateBusiness extends React.Component {
 		}
 		const geofirestore = new GeoFirestore(firestore);
 		const geocollection = geofirestore.collection('businesses');
-		const { businessName,
-			businessDescription,
-			businessAddress,
-			businessCoordinates,
-			businessCategory,
-			businessTwitter,
-			businessFacebook,
-			businessInstagram,
-			businessNumber,
-			businessHours,
+		const { name,
+			description,
+			address,
+			coordinates,
+			category,
+			email,
+			twitter,
+			facebook,
+			instagram,
+			phoneNumber,
+			hours,
 			coverPhoto,
 			featurePhoto1,
 			featurePhoto2,
 			featurePhoto3,
-			businessWebsite,
-			businessLocation } = this.state;
+			website,
+			zipCode,
+			location } = this.state;
 		
 		const { uid, displayName, photoURL } = auth.currentUser || {};
 
 		const business = {
-			businessName,
-			businessDescription,
-			businessAddress,
-			businessNumber,
+			name,
+			description,
+			address,
+			email,
+			phoneNumber,
 			coverPhoto,
 			featurePhoto1,
 			featurePhoto2,
 			featurePhoto3,
-			businessLocation,
+			location,
 			likes: [],
 			upvotes: [],
 			downvotes: [],
 			socialMedia: {
-				twitter: businessTwitter || null,
-				facebook: businessFacebook || null,
-				instagram: businessInstagram || null,
-				website: businessWebsite || null,
+				twitter: twitter || null,
+				facebook: facebook || null,
+				instagram: instagram || null,
+				website: website || null,
 			},
-			businessCategory,
-			businessHours,
-			coordinates: new firebase.firestore.GeoPoint(businessCoordinates.lat, businessCoordinates.lng),
+			category,
+			hours,
+			approved: false,
+			zipCode,
+			coordinates: new firebase.firestore.GeoPoint(coordinates.Rc, coordinates.Ac),
 			user: {
 				uid,
 				displayName,
@@ -325,6 +385,50 @@ class CreateBusiness extends React.Component {
 					// this.props.history.push('/home');
 				})
 			})
+	}
+
+	editBusiness = async event => {
+		event.preventDefault();
+		if(!this.validator.allValid()){
+			this.validator.showMessages()
+			return;
+		}
+
+		const { name,
+			description,
+			address,
+			coordinates,
+			category,
+			email,
+			twitter,
+			facebook,
+			instagram,
+			phoneNumber,
+			hours,
+			coverPhoto,
+			featurePhoto1,
+			featurePhoto2,
+			featurePhoto3,
+			zipCode,
+			website,
+			location } = this.state;
+		
+			this.businessRef.update({ name,
+				description,
+				address,
+				coordinates: new firebase.firestore.GeoPoint(coordinates.Rc, coordinates.Ac),
+				category,
+				email,
+				socialMedia: {twitter, facebook, instagram, website},
+				phoneNumber,
+				hours,
+				coverPhoto,
+				featurePhoto1,
+				featurePhoto2,
+				featurePhoto3,
+				location,
+				zipCode,
+			});
 	}
 
 	normalizeInput = (value, previousValue) => {
@@ -361,18 +465,21 @@ class CreateBusiness extends React.Component {
 
  	render(){
 		
-	  	const { businessName,
-			businessAddress,
-			businessDescription,
-			businessCategory,
-			businessTwitter,
-			businessFacebook,
-			businessInstagram,
-			businessEmail,
-			businessWebsite,
-			businessNumber,
+	  	const { name,
+			address,
+			description,
+			category,
+			twitter,
+			facebook,
+			instagram,
+			email,
+			website,
+			phoneNumber,
 			subscriptionInfo,
-			showCreate
+			showCreate,
+			userHasBusiness,
+			city,
+			zipCode,
 		} = this.state;
 
 		const override = css`
@@ -380,9 +487,6 @@ class CreateBusiness extends React.Component {
 		margin: 0 auto;
 		border-color: red;`;
 
-		console.log(this.state.user);
-		console.log(subscriptionInfo);
-	  
 	return (
 		<div data-testid='create-business-page' id="createBusiness">
 			<TopBar user={this.state.user}/>
@@ -395,30 +499,30 @@ class CreateBusiness extends React.Component {
 			<>
 				<form onSubmit={() => this.addBusiness()}>
 					<div>
-						<label className="business-label" htmlFor="businessName">Business Name</label>
+						<label className="business-label" htmlFor="name">Business Name</label>
 						<input
 							className="business-input"
 							placeholder="Type Your Business Name"
 							type="text"
-							name="businessName"
-							value={businessName}
+							name="name"
+							value={name}
 							onChange={this.handleChange}
 							autoComplete="off"
-							onBlur={() => this.validator.showMessageFor('businessName')}
+							onBlur={() => this.validator.showMessageFor('name')}
 							/>
 						{
-							this.validator.message('businessName', this.state.businessName, 'required')
+							this.validator.message('name', this.state.name, 'required')
 						}
 					</div>
 
-					<label className="business-label" htmlFor="businessCategory">Business Category</label>
+					<label className="business-label" htmlFor="category">Business Category</label>
 					<select
 						className="business-input"
-						name="businessCategory"
-						value={ businessCategory }
+						name="category"
+						value={ category }
 						onChange={this.handleChange}
 						autoComplete="off"
-						onBlur={() => this.validator.showMessageFor('businessCategory')}
+						onBlur={() => this.validator.showMessageFor('category')}
 						>
 						<option className="option-select" value="">Select a Category</option>
 						{
@@ -428,14 +532,14 @@ class CreateBusiness extends React.Component {
 						}
 					</select>
 					{
-						this.validator.message('businessCategory', this.state.businessCategory, 'required')
+						this.validator.message('category', this.state.category, 'required')
 					}
 
-					<label className="business-label" htmlFor="businessAddress">Business Address</label>
+					<label className="business-label" htmlFor="address">Business Address</label>
 						<PlacesAutocomplete
 							searchOptions={this.searchOptions}
-							name="businessAddress"
-							value={ businessAddress }
+							name="address"
+							value={ address }
 							onChange={this.handleAddressChange}
 							onSelect={this.handleSelect}
 							pattern={this.validations.address}
@@ -474,37 +578,71 @@ class CreateBusiness extends React.Component {
 							)}
 						</PlacesAutocomplete>
 						{
-							this.validator.message('businessAddress', this.state.businessAddress, 'required')
+							this.validator.message('address', this.state.address, 'required')
 						}
 
-					<label className="business-label" htmlFor="businessNumber">Phone Number</label>
+					<label className="business-label" htmlFor="city">City</label>
+					<input
+						className="business-input"
+						placeholder="Street Address"
+						type="text"
+						name="city"
+						value={ city }
+						onChange={this.handleChange}
+						autoComplete="off"
+					/>
+
+					<label className="business-label" htmlFor="state">State</label>
+					<input
+						className="business-input"
+						placeholder="Street Address"
+						type="text"
+						name="state"
+						disabled={true}
+						value="Florida"
+						onChange={this.handleChange}
+						autoComplete="off"
+					/>
+
+					<label className="business-label" htmlFor="zipCode">Zip Code</label>
+					<input
+						className="business-input"
+						placeholder="Street Address"
+						type="text"
+						name="zipCode"
+						value={zipCode}
+						onChange={this.handleChange}
+						autoComplete="off"
+					/>
+
+					<label className="business-label" htmlFor="phoneNumber">Phone Number</label>
 					<input
 						className="business-input"
 						placeholder="What is your Business Number"
 						type="tel"
 						pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
-						name="businessNumber"
-						value={ businessNumber }
+						name="phoneNumber"
+						value={ phoneNumber }
 						onChange={this.handleChange}
 						autoComplete="off"
 					/>
 					{
-						this.validator.message('businessNumber', this.state.businessNumber, 'required')
+						this.validator.message('phoneNumber', this.state.phoneNumber, 'required')
 					}
 
-					<label className="business-label" htmlFor="businessDescription">Describe your Business</label>
+					<label className="business-label" htmlFor="description">Describe your Business</label>
 					<textarea
 						className=""
 						placeholder="Tell us about your business ()."
 						type="text"
-						name="businessDescription"
-						value={ businessDescription }
+						name="description"
+						value={ description }
 						onChange={this.handleChange}
 						autoComplete="off"
 						height="250px"
 					/>
 					{
-						this.validator.message('businessDescription', this.state.businessDescription, 'required')
+						this.validator.message('description', this.state.description, 'required')
 					}
 
 					<h1>Upload a Cover Photo</h1>
@@ -577,65 +715,75 @@ class CreateBusiness extends React.Component {
 						</div>
 					</div>
 
-					<label className="business-label" htmlFor="businessEmail">Business Email</label>
+					<label className="business-label" htmlFor="email">Business Email</label>
 					<input
 						className="business-input"
 						placeholder="IE: john.doe@gmail.com"
 						type="email"
-						name="businessEmail"
-						value={ businessEmail }
+						name="email"
+						value={ email }
 						onChange={this.handleChange}
 						autoComplete="off"
 						/>
 					{
-						this.validator.message('businessEmail', this.state.businessEmail, 'required')
+						this.validator.message('email', this.state.email, 'required')
 					}
 
-					<label className="business-label" htmlFor="businessWebsite">Business Website</label>
+					<label className="business-label" htmlFor="website">Business Website</label>
 					<input
 						className="business-input"
 						placeholder="IE: www.yourwebsite.com"
 						type="url"
-						name="businessWebsite"
-						value={ businessWebsite }
+						name="website"
+						value={ website }
 						onChange={this.handleChange}
 						autoComplete="off"
 						/>
 
-					<label className="business-label" htmlFor="businessTwitter">Business Twitter</label>
+					<label className="business-label" htmlFor="twitter">Business Twitter</label>
 					<input
 						className="business-input"
 						placeholder="IE: www.twitter.com/your_username"
 						type="url"
-						name="businessTwitter"
-						value={ businessTwitter }
+						name="twitter"
+						value={ twitter }
 						onChange={this.handleChange}
 						autoComplete="off"
 						/>
 
-					<label className="business-label" htmlFor="businessFacebook">Business Facebook</label>
+					<label className="business-label" htmlFor="facebook">Business Facebook</label>
 					<input
 						className="business-input"
 						placeholder="IE: www.facebook.com/your_businesspage"
 						type="url"
-						name="businessFacebook"
-						value={ businessFacebook }
+						name="facebook"
+						value={ facebook }
 						onChange={this.handleChange}
 						autoComplete="off"
 						/>
 
-					<label className="business-label" htmlFor="businessInstagram">Business Instagram</label>
+					<label className="business-label" htmlFor="instagram">Business Instagram</label>
 					<input
 						className="business-input"
 						placeholder="IE: www.instagram.com/your_username"
 						type="url"
-						name="businessInstagram"
-						value={ businessInstagram }
+						name="instagram"
+						value={ instagram }
 						onChange={this.handleChange}
 						autoComplete="off"
 						/>
 
-					<button type="submit" onClick={(event) => this.addBusiness(event)} className="button">Add Business</button>
+					{ this.state.userHasBusiness && this.state.userHasBusiness ?
+						<button type="submit" 
+							onClick={(event) => this.editBusiness(event)} 
+							className="button">Edit Business
+						</button>
+						: 	
+						<button type="submit" 
+							onClick={(event) => this.addBusiness(event)} 
+							className="button">Add Business
+						</button>
+					}
 				</form>
 				</>
 				:
@@ -645,6 +793,7 @@ class CreateBusiness extends React.Component {
 						isActive = {subscriptionInfo?.status}
 						toggleCreate = {this.toggleCreate}
 						user = {this.state.user}
+						userHasBusiness = {userHasBusiness}
 					/>
 				</div>
 				
