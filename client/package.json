@@ -5,7 +5,7 @@
   "dependencies": {
     "@google-cloud/storage": "^5.5.0",
     "@stripe/stripe-js": "^1.13.2",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "enzyme": "^3.11.0",
     "firebase": "^7.15.1",
     "firebase-functions": "^3.14.1",
